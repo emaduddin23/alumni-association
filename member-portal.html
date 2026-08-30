@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alumni Portal | AlumniHub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="./styles/main.css">
+    <style>
+        body { background-color: var(--bg-main); display: flex; height: 100vh; overflow: hidden; margin: 0; }
+        
+        /* Auth Screen Styling */
+        .auth-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.15), transparent 45%),
+                        radial-gradient(circle at bottom left, rgba(79, 70, 229, 0.15), transparent 45%),
+                        var(--bg-main);
+            position: absolute;
+            top: 0; left: 0;
+            z-index: 100;
+            transition: var(--transition);
+        }
+        .auth-card {
+            background: white;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 440px;
+            padding: 2.5rem;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 280px;
+            background-color: #1e1b4b; /* Indigo theme for DU */
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+        }
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+        .tenant-logo {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1e1b4b;
+            font-weight: 800;
+            font-size: 1.5rem;
+        }
+        .sidebar-menu { flex: 1; padding: 1.5rem 0; overflow-y: auto; }
+        .menu-item {
+            padding: 0.8rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: #cbd5e1;
+            transition: var(--transition);
+        }
+        .menu-item:hover, .menu-item.active {
+            background-color: rgba(255,255,255,0.05);
+            color: white;
+            border-left: 4px solid var(--secondary);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .admin-header {
+            background-color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .content-area { padding: 2rem; }
+
+        /* Wizard Setup */
+        .wizard-step { display: none; }
+        .wizard-step.active { display: block; }
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 15px; left: 0;
+            width: 100%; height: 2px;
+            background: var(--border);
+            z-index: 1;
+        }
+        .ind-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: bold;
+            z-index: 2;
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+        .ind-dot.active {
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+        .ind-dot.done {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* Job Card */
+        .job-card {
+            background: white;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: var(--transition);
+        }
+        .job-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15,23,42,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .modal.active { opacity: 1; }
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            box-shadow: var(--shadow-lg);
+            color: var(--text-main);
+        }
+        .modal.active .modal-content { transform: translateY(0); }
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-body { padding: 1.5rem; max-height: 60vh; overflow-y: auto; }
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+            background: #f8fafc;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. Authentication Screen (Overlay) -->
+    <div id="authScreen" class="auth-container">
+        <div class="auth-card">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <i class="ri-graduation-cap-fill" style="font-size: 3rem; color: var(--primary);"></i>
+                <h2 style="font-size: 1.5rem; margin-top: 0.5rem;">Alumni Portal Login</h2>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">Enter details to access your portal or register.</p>
+            </div>
+            
+            <form id="authForm" onsubmit="handleAuthSubmit(event)">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="authEmail" class="form-control" placeholder="e.g. kamal@example.com or your email" required>
+                </div>
+                <div class="form-group" id="passGroup">
+                    <label>Password</label>
+                    <input type="password" id="authPassword" class="form-control" placeholder="••••••••" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;" id="authSubmitBtn">Sign In</button>
+            </form>
+            
+            <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem;">
+                <span id="authToggleText">New to the Portal?</span> 
+                <a href="#" id="authToggleLink" onclick="toggleAuthMode(event)" style="color: var(--primary); font-weight: 600;">Create Account</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Registration / Verification Wizard Overlay -->
+    <div id="wizardScreen" class="auth-container" style="display: none; z-index: 90;">
+        <div class="auth-card" style="max-width: 500px;">
+            <div class="step-indicator">
+                <div class="ind-dot active" id="dot-1">1</div>
+                <div class="ind-dot" id="dot-2">2</div>
+                <div class="ind-dot" id="dot-3">3</div>
+                <div class="ind-dot" id="dot-4"><i class="ri-check-line"></i></div>
+            </div>
+
+            <!-- Step 1: Setup Details -->
+            <div class="wizard-step active" id="step-1-view">
+                <h3 style="margin-bottom: 1.5rem;">Create Account Details</h3>
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="wizName" class="form-control" placeholder="e.g. Jamil Hasan" required>
+                </div>
+                <div class="form-group">
+                    <label>Choose Password</label>
+                    <input type="password" id="wizPassword" class="form-control" placeholder="••••••••" required>
+                </div>
+                <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="wizardNext(1)">Next Step</button>
+            </div>
+
+            <!-- Step 2: Academic Info -->
+            <div class="wizard-step" id="step-2-view">
+                <h3 style="margin-bottom: 1.5rem;">Academic details</h3>
+                <div class="form-group">
+                    <label>Department / Major</label>
+                    <input type="text" id="wizDept" class="form-control" placeholder="e.g. Computer Science" required>
+                </div>
+                <div class="form-group">
+                    <label>Passing Year (Batch)</label>
+                    <input type="number" id="wizBatch" class="form-control" placeholder="e.g. 2015" required>
+                </div>
+                <div class="flex gap-4" style="margin-top: 1.5rem;">
+                    <button class="btn btn-outline" style="width: 50%;" onclick="wizardPrev(2)">Back</button>
+                    <button class="btn btn-primary" style="width: 50%;" onclick="wizardNext(2)">Next Step</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Proof Upload -->
+            <div class="wizard-step" id="step-3-view">
+                <h3 style="margin-bottom: 1.5rem;">Upload Student ID / Certificate</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">To verify your alumni status, please upload a photo/PDF of your university ID or degree certificate.</p>
+                <div class="form-group" style="text-align: center; border: 2px dashed var(--border); border-radius: 12px; padding: 2.5rem 1rem; cursor: pointer; transition: var(--transition);" onclick="document.getElementById('proofFileInput').click()">
+                    <i class="ri-upload-cloud-2-line" style="font-size: 3rem; color: var(--primary);"></i>
+                    <p style="font-size: 0.9rem; font-weight: 500; margin-top: 0.5rem;" id="fileNameDisplay">Click to browse or drag file here</p>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">Supports PDF, PNG, JPG (Max 5MB)</span>
+                    <input type="file" id="proofFileInput" style="display: none;" onchange="handleFileSelected(event)">
+                </div>
+                <div class="flex gap-4" style="margin-top: 1.5rem;">
+                    <button class="btn btn-outline" style="width: 50%;" onclick="wizardPrev(3)">Back</button>
+                    <button class="btn btn-primary" style="width: 50%;" onclick="wizardNext(3)" id="proofNextBtn" disabled>Submit Application</button>
+                </div>
+            </div>
+
+            <!-- Step 4: Verification Pending -->
+            <div class="wizard-step" id="step-4-view" style="text-align: center;">
+                <i class="ri-time-line" style="font-size: 4rem; color: var(--warning); display: block; margin-bottom: 1rem;"></i>
+                <h3 style="margin-bottom: 0.5rem;">Verification Pending</h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem;">Thank you! Your academic proof has been submitted to <strong>Dhaka University Alumni</strong> Admin. We will verify your credentials and approve your account shortly.</p>
+                <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; font-size: 0.8rem; text-align: left; border: 1px solid var(--border); margin-bottom: 1.5rem;">
+                    <strong>Application Status:</strong><br>
+                    • OTP Verification: <span style="color: var(--success); font-weight: 600;">✓ Completed</span><br>
+                    • Information Review: <span style="color: var(--success); font-weight: 600;">✓ Completed</span><br>
+                    • Academic Document: <span style="color: var(--primary); font-weight: 600;">Awaiting Admin Review</span>
+                </div>
+                <button class="btn btn-outline" style="width: 100%;" onclick="logoutMember()">Return to Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. MAIN PORTAL DASHBOARD (Once Approved) -->
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="tenant-logo">DU</div>
+            <h3 style="font-size: 1.1rem; margin-bottom: 0.25rem;">Dhaka Univ Alumni</h3>
+            <span class="badge" style="background: rgba(255,255,255,0.1); color: white;">Member Portal</span>
+        </div>
+        <div class="sidebar-menu">
+            <a href="#" class="menu-item active"><i class="ri-user-line"></i> My Digital ID</a>
+            <a href="#" class="menu-item"><i class="ri-group-line"></i> Alumni Directory</a>
+            <a href="#" class="menu-item"><i class="ri-briefcase-line"></i> Jobs & Referrals</a>
+            <a href="#" class="menu-item"><i class="ri-message-3-line"></i> Notices & Events</a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="admin-header">
+            <div class="flex items-center gap-4">
+                <h2 style="font-size: 1.25rem; font-weight: 600;" id="portalHeading">My Digital ID</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="btn btn-outline" style="padding: 0.5rem; border-radius: 50%;"><i class="ri-notification-3-line"></i></button>
+                <div class="flex items-center gap-2">
+                    <div style="width: 36px; height: 36px; background: var(--primary); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;" id="userHeaderAvatar">KM</div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.875rem;" id="userHeaderName">Kamal Uddin</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);" id="userHeaderDept">Alumni Member</div>
+                    </div>
+                </div>
+                <button class="btn btn-outline" style="padding: 0.5rem 1rem; border-color: var(--danger); color: var(--danger);" onclick="logoutMember()"><i class="ri-logout-box-r-line"></i> Logout</button>
+            </div>
+        </header>
+
+        <div class="content-area">
+            
+            <!-- VIEW 1: Digital ID Card -->
+            <div class="view-section active" id="view-id-card">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto;">Your digital alumnus verification identity card. Show this QR code at event entrances for fast check-in.</p>
+                </div>
+                <div class="id-card-wrapper">
+                    <div class="digital-id-card" style="box-shadow: var(--shadow-lg);">
+                        <div class="id-logo">
+                            <i class="ri-graduation-cap-fill"></i>
+                            <span>AlumniHub</span>
+                        </div>
+                        <div id="portalCardAvatar">
+                            <!-- Initials Avatar -->
+                        </div>
+                        <div class="id-info">
+                            <div class="id-name" id="portalCardName">Kamal Uddin</div>
+                            <div class="id-detail" id="portalCardDept">Mathematics</div>
+                            <div class="id-detail" id="portalCardBatch">Batch: 2012</div>
+                            <div class="id-detail" style="font-family: monospace; font-weight: 600; margin-top: 0.5rem; color: var(--accent);">ID: DUA-823901</div>
+                        </div>
+                        <div class="id-qr">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=DUA-823901-VERIFIED" alt="QR Verification">
+                        </div>
+                        <div class="id-footer">
+                            <div>Valid: 31 Dec 2027</div>
+                            <div style="font-size: 0.6rem; color: rgba(255,255,255,0.4); margin-top: 0.25rem;">SECURE ID • ALUMNI ASSOCIATION</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 2: Alumni Directory Search -->
+            <div class="view-section" id="view-directory">
+                <div class="table-container" style="background: transparent; border: none;">
+                    <div class="table-header" style="background: white; border: 1px solid var(--border); border-radius: var(--radius) var(--radius) 0 0; border-bottom: none;">
+                        <h3>Verified Alumni Directory</h3>
+                    </div>
+                    <div class="search-bar-container" style="border-radius: 0 0 var(--radius) var(--radius); margin-bottom: 2rem;">
+                        <i class="ri-search-line" style="font-size: 1.2rem; color: var(--text-muted); align-self: center;"></i>
+                        <input type="text" id="memberPortalSearch" placeholder="Filter directories by name, batch, department..." class="form-control" style="border: none; padding: 0.25rem 0.5rem;" onkeyup="searchMemberPortalDirectory()">
+                    </div>
+                    <div class="grid-3" id="memberPortalDirectoryGrid">
+                        <!-- Dynamic Profile Cards Rendered by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 3: Jobs & Referrals Board -->
+            <div class="view-section" id="view-jobs">
+                <div class="flex justify-between items-center" style="margin-bottom: 1.5rem;">
+                    <h3>Career & Referrals Board</h3>
+                    <button class="btn btn-primary" onclick="openModal('newJobModal')"><i class="ri-add-line"></i> Post Job / Request Referral</button>
+                </div>
+                
+                <div id="jobsListContainer" class="flex" style="flex-direction: column; gap: 1rem;">
+                    <!-- Dynamic Job Cards Rendered by JS -->
+                </div>
+            </div>
+
+            <!-- VIEW 4: Notice Board & Events -->
+            <div class="view-section" id="view-notices">
+                <div class="grid-2">
+                    <div class="card">
+                        <h3 style="margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Latest Notices</h3>
+                        <ul style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.9rem;">
+                            <li>
+                                <div style="font-weight: 600;">Reunion Date Confirmed: December 15, 2026</div>
+                                <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">All verified members are requested to register and collect their entry QR cards early.</p>
+                            </li>
+                            <li style="border-top: 1px solid var(--border); padding-top: 1rem;">
+                                <div style="font-weight: 600;">Annual Membership Fee Collection Campaign Open</div>
+                                <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">Please clear annual dues online using bKash, Nagad or Visa to remain active member.</p>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <h3 style="margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Upcoming Events</h3>
+                        <div id="memberEventsContainer">
+                            <!-- Injected dynamically by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="./scripts/main.js"></script>
+    <script>
+        // ==========================================
+        // MEMBER PORTAL CONTROLLER LOGIC
+        // ==========================================
+        const urlParams = new URLSearchParams(window.location.search);
+        const portalTenantId = urlParams.get('tenant') || 'tenant-du';
+        let authMode = 'login'; // 'login' or 'signup'
+        let currentWizardStep = 1;
+        let selectedFile = '';
+
+        // Check login state on load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Apply tenant-specific branding and configuration on load
+            const tenant = DB.getTenants().find(t => t.id === portalTenantId);
+            if (tenant) {
+                // Update sidebar header
+                const logoEl = document.querySelector('.tenant-logo');
+                if (logoEl) logoEl.innerText = tenant.logo;
+                const headerTitle = document.querySelector('.sidebar-header h3');
+                if (headerTitle) headerTitle.innerText = tenant.name;
+                
+                // Update Auth header title
+                const authTitle = document.querySelector('.auth-card h2');
+                if (authTitle) authTitle.innerText = `${tenant.name} Login`;
+
+                // Update OTP pending wizard header text
+                const wizPendingText = document.querySelector('#step-4-view p strong');
+                if (wizPendingText) wizPendingText.innerText = tenant.name;
+
+                // Adjust features based on tenant permissions
+                const sidebarTabs = document.querySelectorAll('.sidebar-menu .menu-item');
+                // Directory (index 1)
+                if (!tenant.features.members && sidebarTabs[1]) sidebarTabs[1].style.display = 'none';
+                // Jobs (index 2)
+                if (!tenant.features.jobs && sidebarTabs[2]) sidebarTabs[2].style.display = 'none';
+                // Events (index 3)
+                if (!tenant.features.events && sidebarTabs[3]) sidebarTabs[3].style.display = 'none';
+
+                // Apply colors
+                applyPortalTheme(tenant.primaryColor);
+            }
+
+            const member = JSON.parse(localStorage.getItem('alumnihub_logged_in_member'));
+            if (member && member.tenantId === portalTenantId) {
+                showMemberLayout(member);
+            } else {
+                showAuthLayout();
+            }
+        });
+
+        function applyPortalTheme(color) {
+            if (!color) return;
+            document.documentElement.style.setProperty('--primary', color);
+            document.documentElement.style.setProperty('--primary-hover', adjustColorBrightness(color, -15));
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) sidebar.style.backgroundColor = color;
+            
+            const logoEl = document.querySelector('.tenant-logo');
+            if (logoEl) logoEl.style.color = color;
+        }
+
+        function adjustColorBrightness(hex, percent) {
+            let R = parseInt(hex.substring(1, 3), 16);
+            let G = parseInt(hex.substring(3, 5), 16);
+            let B = parseInt(hex.substring(5, 7), 16);
+            R = parseInt(R * (100 + percent) / 100);
+            G = parseInt(G * (100 + percent) / 100);
+            B = parseInt(B * (100 + percent) / 100);
+            R = (R < 255) ? R : 255;
+            G = (G < 255) ? G : 255;
+            B = (B < 255) ? B : 255;
+            const rHex = (R.toString(16).length === 1) ? "0" + R.toString(16) : R.toString(16);
+            const gHex = (G.toString(16).length === 1) ? "0" + G.toString(16) : G.toString(16);
+            const bHex = (B.toString(16).length === 1) ? "0" + B.toString(16) : B.toString(16);
+            return "#" + rHex + gHex + bHex;
+        }
+
+        function toggleAuthMode(e) {
+            e.preventDefault();
+            const emailInput = document.getElementById('authEmail');
+            const passInput = document.getElementById('authPassword');
+            const submitBtn = document.getElementById('authSubmitBtn');
+            const toggleLink = document.getElementById('authToggleLink');
+            const toggleText = document.getElementById('authToggleText');
+            const passGroup = document.getElementById('passGroup');
+
+            if (authMode === 'login') {
+                authMode = 'signup';
+                document.querySelector('.auth-card h2').innerText = 'Alumni Registration';
+                document.querySelector('.auth-card p').innerText = 'Verify your email to begin application wizard.';
+                passGroup.style.display = 'none'; // Set password inside wizard instead
+                passInput.required = false;
+                submitBtn.innerText = 'Verify Email & Register';
+                toggleText.innerText = 'Already have an account?';
+                toggleLink.innerText = 'Sign In';
+            } else {
+                authMode = 'login';
+                document.querySelector('.auth-card h2').innerText = 'Alumni Portal Login';
+                document.querySelector('.auth-card p').innerText = 'Enter details to access your portal or register.';
+                passGroup.style.display = 'block';
+                passInput.required = true;
+                submitBtn.innerText = 'Sign In';
+                toggleText.innerText = 'New to the Portal?';
+                toggleLink.innerText = 'Create Account';
+            }
+        }
+
+        function handleAuthSubmit(e) {
+            e.preventDefault();
+            const email = document.getElementById('authEmail').value;
+            
+            if (authMode === 'login') {
+                const password = document.getElementById('authPassword').value;
+                const members = DB.getMembers();
+                const member = members.find(m => m.email === email && m.tenantId === portalTenantId);
+
+                if (!member) {
+                    alert('No alumni profile found with this email.');
+                    return;
+                }
+
+                // Simulating password validation (e.g. any password passes for default seeded profiles)
+                localStorage.setItem('alumnihub_logged_in_member', JSON.stringify(member));
+                showMemberLayout(member);
+            } else {
+                // Sign Up flow: Start Wizard
+                document.getElementById('wizName').value = '';
+                document.getElementById('wizPassword').value = '';
+                document.getElementById('wizDept').value = '';
+                document.getElementById('wizBatch').value = '';
+                document.getElementById('proofFileInput').value = '';
+                document.getElementById('fileNameDisplay').innerText = 'Click to browse or drag file here';
+                document.getElementById('proofNextBtn').disabled = true;
+                
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('wizardScreen').style.display = 'flex';
+                currentWizardStep = 1;
+                showWizardStep(1);
+            }
+        }
+
+        function showWizardStep(step) {
+            document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
+            document.getElementById(`step-${step}-view`).classList.add('active');
+            
+            // Update dots
+            for (let i = 1; i <= 4; i++) {
+                const dot = document.getElementById(`dot-${i}`);
+                dot.classList.remove('active', 'done');
+                if (i < step) dot.classList.add('done');
+                else if (i === step) dot.classList.add('active');
+            }
+        }
+
+        function wizardNext(step) {
+            if (step === 1) {
+                const name = document.getElementById('wizName').value;
+                const pass = document.getElementById('wizPassword').value;
+                if (!name || !pass) return alert('Name and Password are required!');
+                currentWizardStep = 2;
+                showWizardStep(2);
+            } else if (step === 2) {
+                const dept = document.getElementById('wizDept').value;
+                const batch = document.getElementById('wizBatch').value;
+                if (!dept || !batch) return alert('Dept and Batch are required!');
+                currentWizardStep = 3;
+                showWizardStep(3);
+            } else if (step === 3) {
+                // Submit to local storage DB
+                const name = document.getElementById('wizName').value;
+                const email = document.getElementById('authEmail').value;
+                const dept = document.getElementById('wizDept').value;
+                const batch = document.getElementById('wizBatch').value;
+                
+                const members = DB.getMembers();
+                const newMember = {
+                    tenantId: portalTenantId,
+                    name,
+                    email,
+                    batch,
+                    dept,
+                    status: 'Pending',
+                    stepOTP: 'Done',
+                    stepInfo: 'Done',
+                    stepProof: 'Done',
+                    proofDoc: selectedFile
+                };
+                
+                // Add or override existing
+                const idx = members.findIndex(m => m.email === email && m.tenantId === portalTenantId);
+                if (idx > -1) members[idx] = newMember;
+                else members.push(newMember);
+                
+                DB.saveMembers(members);
+                
+                // Set as logged in member
+                localStorage.setItem('alumnihub_logged_in_member', JSON.stringify(newMember));
+                
+                currentWizardStep = 4;
+                showWizardStep(4);
+            }
+        }
+
+        function wizardPrev(step) {
+            currentWizardStep = step - 1;
+            showWizardStep(currentWizardStep);
+        }
+
+        function handleFileSelected(e) {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFile = file.name;
+                document.getElementById('fileNameDisplay').innerText = `✓ Selected: ${file.name}`;
+                document.getElementById('proofNextBtn').disabled = false;
+            }
+        }
+
+        function showMemberLayout(member) {
+            if (member.status === 'Pending') {
+                // Return to awaiting approval wizard state
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('wizardScreen').style.display = 'flex';
+                currentWizardStep = 4;
+                showWizardStep(4);
+                return;
+            }
+
+            // Show approved layout
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('wizardScreen').style.display = 'none';
+            
+            // Header profile
+            document.getElementById('userHeaderName').innerText = member.name;
+            document.getElementById('userHeaderDept').innerText = member.dept;
+            const initials = member.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+            document.getElementById('userHeaderAvatar').innerText = initials;
+
+            // Render views
+            renderIDCard(member);
+            renderDirectory();
+            renderEvents();
+            renderJobs();
+
+            // Set up sidebar tabs switching
+            const sidebarTabs = document.querySelectorAll('.sidebar-menu .menu-item');
+            const portalHeading = document.getElementById('portalHeading');
+            sidebarTabs.forEach((tab, index) => {
+                tab.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    sidebarTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    const views = document.querySelectorAll('.main-content .view-section');
+                    views.forEach(v => v.classList.remove('active'));
+                    if (views[index]) views[index].classList.add('active');
+
+                    portalHeading.innerText = tab.innerText.trim();
+                });
+            });
+        }
+
+        function showAuthLayout() {
+            document.getElementById('authScreen').style.display = 'flex';
+            document.getElementById('wizardScreen').style.display = 'none';
+        }
+
+        function logoutMember() {
+            localStorage.removeItem('alumnihub_logged_in_member');
+            showAuthLayout();
+            // Reset wizard variables
+            currentWizardStep = 1;
+            selectedFile = '';
+        }
+
+        function renderIDCard(member) {
+            const initials = member.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+            document.getElementById('portalCardAvatar').innerHTML = `
+                <div style="width: 110px; height: 110px; border-radius: 50%; background: linear-gradient(135deg, var(--secondary), var(--primary)); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 800; color: white;">
+                    ${initials}
+                </div>
+            `;
+            document.getElementById('portalCardName').innerText = member.name;
+            document.getElementById('portalCardDept').innerText = member.dept;
+            document.getElementById('portalCardBatch').innerText = `Batch: ${member.batch}`;
+        }
+
+        function renderDirectory() {
+            const grid = document.getElementById('memberPortalDirectoryGrid');
+            if (!grid) return;
+
+            const members = DB.getMembers().filter(m => m.tenantId === portalTenantId && m.status === 'Approved');
+            grid.innerHTML = '';
+
+            if (members.length === 0) {
+                grid.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: span 3;">No alumni found</p>';
+                return;
+            }
+
+            members.forEach(member => {
+                const initials = member.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+                const profession = member.profession || 'Software Engineer';
+                const company = member.company || 'Dhaka University Alumni';
+
+                const card = document.createElement('div');
+                card.className = 'card profile-card';
+                card.style.textAlign = 'center';
+                card.style.display = 'flex';
+                card.style.flexDirection = 'column';
+                card.style.alignItems = 'center';
+                card.style.padding = '1.5rem';
+                
+                card.innerHTML = `
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--secondary), var(--primary)); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 1rem; box-shadow: var(--shadow-sm);">
+                        ${initials}
+                    </div>
+                    <h4 style="margin-bottom: 0.25rem; font-size: 1.1rem; color: var(--text-main);">${member.name}</h4>
+                    <p style="font-size: 0.85rem; font-weight: 600; color: var(--primary); margin-bottom: 0.75rem;">${profession} @ ${company}</p>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; border-top: 1px solid var(--border); width: 100%; padding-top: 0.75rem;">
+                        <div>Dept: ${member.dept}</div>
+                        <div>Batch: ${member.batch}</div>
+                    </div>
+                    <button class="btn btn-outline" style="width: 100%; padding: 0.4rem; font-size: 0.8rem; border-color: var(--primary); color: var(--primary);" onclick="window.location.href='mailto:${member.email}'"><i class="ri-mail-send-line"></i> Contact Alumni</button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function searchMemberPortalDirectory() {
+            const query = document.getElementById('memberPortalSearch').value.toLowerCase();
+            const cards = document.querySelectorAll('#memberPortalDirectoryGrid .profile-card');
+            
+            cards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                if (text.includes(query)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function renderEvents() {
+            const container = document.getElementById('memberEventsContainer');
+            if (!container) return;
+
+            const events = DB.getEvents().filter(e => e.tenantId === portalTenantId);
+            container.innerHTML = '';
+
+            if (events.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No upcoming events listed.</p>';
+                return;
+            }
+
+            events.forEach(event => {
+                const item = document.createElement('div');
+                item.style.marginBottom = '1.25rem';
+                item.innerHTML = `
+                    <div class="flex justify-between" style="font-weight: 600; font-size: 0.95rem;">
+                        <span>${event.title}</span>
+                        <span style="color: var(--primary);">${event.price}</span>
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">
+                        <span><i class="ri-map-pin-line"></i> ${event.location}</span> | 
+                        <span><i class="ri-time-line"></i> ${event.date}</span>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%; padding: 0.4rem; font-size: 0.8rem; margin-top: 0.5rem;" onclick="buyTicket('${event.title}')">Collect Entry QR Card</button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function buyTicket(eventTitle) {
+            alert(`Ticket generated successfully for "${eventTitle}"! Show your Digital ID QR Code at entrance.`);
+        }
+
+        function renderJobs() {
+            const container = document.getElementById('jobsListContainer');
+            if (!container) return;
+
+            const jobs = JSON.parse(localStorage.getItem('alumnihub_jobs')) || [];
+            const tenantJobs = jobs.filter(j => j.tenantId === portalTenantId);
+            container.innerHTML = '';
+
+            if (tenantJobs.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 2rem;">No job listings available.</p>';
+                return;
+            }
+
+            tenantJobs.forEach(job => {
+                const badgeColor = job.type === 'Referral Available' ? 'background: #e0f2fe; color: #0369a1;' : 'background: #f1f5f9; color: #475569;';
+                const card = document.createElement('div');
+                card.className = 'job-card';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start" style="margin-bottom: 0.5rem;">
+                        <div>
+                            <h4 style="font-size: 1.1rem; color: var(--text-main);">${job.title}</h4>
+                            <div style="font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-top: 0.25rem;">${job.company} • ${job.location}</div>
+                        </div>
+                        <span class="badge" style="${badgeColor}">${job.type}</span>
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">${job.description}</p>
+                    <div class="flex justify-between items-center" style="font-size: 0.8rem; color: var(--text-muted);">
+                        <span>Posted by: <strong>${job.postedBy}</strong> (${job.batch ? `Batch ${job.batch}` : 'Recruiter'})</span>
+                        <span>Deadline: 20 Sep 2026</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function createNewJob(e) {
+            e.preventDefault();
+            const title = document.getElementById('jobTitle').value;
+            const company = document.getElementById('jobCompany').value;
+            const location = document.getElementById('jobLocation').value;
+            const type = document.getElementById('jobType').value;
+            const desc = document.getElementById('jobDesc').value;
+
+            const member = JSON.parse(localStorage.getItem('alumnihub_logged_in_member'));
+            const name = member ? member.name : 'Alumnus';
+            const batch = member ? member.batch : 'Unknown';
+
+            const jobs = JSON.parse(localStorage.getItem('alumnihub_jobs')) || [];
+            jobs.push({
+                tenantId: portalTenantId,
+                title,
+                company,
+                location,
+                type,
+                description: desc,
+                postedBy: name,
+                batch: batch,
+                deadline: '25 Sep 2026'
+            });
+            localStorage.setItem('alumnihub_jobs', JSON.stringify(jobs));
+            renderJobs();
+            closeModal('newJobModal');
+            document.getElementById('newJobForm').reset();
+        }
+    </script>
+    <!-- Modal: Post a Job -->
+    <div id="newJobModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Post Job / Request Referral</h3>
+                <button onclick="closeModal('newJobModal')" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);">&times;</button>
+            </div>
+            <form id="newJobForm" onsubmit="createNewJob(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="jobTitle">Job Title</label>
+                        <input type="text" id="jobTitle" placeholder="e.g. Senior Product Designer" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="jobCompany">Company Name</label>
+                        <input type="text" id="jobCompany" placeholder="e.g. Google, Brain Station 23" class="form-control" required>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="jobLocation">Location</label>
+                            <input type="text" id="jobLocation" placeholder="e.g. Dhaka, Remote" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="jobType">Job Type</label>
+                            <select id="jobType" class="form-control">
+                                <option value="Referral Available">Referral Available</option>
+                                <option value="Direct Job">Direct Job</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="jobDesc">Description & Requirements</label>
+                        <textarea id="jobDesc" placeholder="Describe the job role and how to apply..." class="form-control" style="height: 100px; resize: none;" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('newJobModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Post Job</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

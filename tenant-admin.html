@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Association Admin | AlumniHub SaaS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="./styles/main.css">
+    <style>
+        body { background-color: var(--bg-main); display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Sidebar styling for Tenant (e.g. customized color theme) */
+        .sidebar {
+            width: 280px;
+            background-color: #1e1b4b; /* Different shade to distinguish from Super Admin */
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+        }
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+        .tenant-logo {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1e1b4b;
+            font-weight: 800;
+            font-size: 1.5rem;
+        }
+        .sidebar-menu { flex: 1; padding: 1.5rem 0; overflow-y: auto; }
+        .menu-item {
+            padding: 0.8rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: #cbd5e1;
+            transition: var(--transition);
+        }
+        .menu-item:hover, .menu-item.active {
+            background-color: rgba(255,255,255,0.05);
+            color: white;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .admin-header {
+            background-color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .content-area { padding: 2rem; }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        .stat-icon.secondary { background: rgba(139, 92, 246, 0.1); color: var(--secondary); }
+        .stat-icon.danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .stat-icon.success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        
+        /* Verification Table */
+        .table-container {
+            background: white;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        .table-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th { background-color: #f8fafc; color: var(--text-muted); font-weight: 600; font-size: 0.875rem; text-transform: uppercase; }
+        
+        .proof-btn {
+            background: #f1f5f9;
+            color: var(--primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: 1px solid #cbd5e1;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .proof-btn:hover { background: #e2e8f0; }
+        
+        .verification-steps {
+            display: flex;
+            gap: 0.5rem;
+            font-size: 1.25rem;
+        }
+        .step-done { color: var(--success); }
+        .step-pending { color: var(--warning); }
+        
+        /* Feature Cards */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        .feature-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+        .feature-card h3 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+        }
+
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15,23,42,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .modal.active { opacity: 1; }
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            box-shadow: var(--shadow-lg);
+            color: var(--text-main);
+        }
+        .modal.active .modal-content { transform: translateY(0); }
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-body { padding: 1.5rem; max-height: 60vh; overflow-y: auto; }
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+            background: #f8fafc;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="tenant-logo">DU</div>
+            <h3 style="font-size: 1.1rem; margin-bottom: 0.25rem;">Dhaka Univ Alumni</h3>
+            <span class="badge" style="background: rgba(255,255,255,0.1); color: white;">Professional Plan</span>
+        </div>
+        <div class="sidebar-menu">
+            <a href="#" class="menu-item active"><i class="ri-dashboard-line"></i> Dashboard</a>
+            <a href="#" class="menu-item"><i class="ri-user-follow-line"></i> Verification System <span class="badge" style="background: var(--danger); color: white; margin-left: auto;">12</span></a>
+            <a href="#" class="menu-item"><i class="ri-group-line"></i> Member Directory</a>
+            <a href="#" class="menu-item"><i class="ri-calendar-event-line"></i> Events & Reunions</a>
+            <a href="#" class="menu-item"><i class="ri-hand-heart-line"></i> Donations & Funds</a>
+            <a href="#" class="menu-item"><i class="ri-message-3-line"></i> News & Notice Board</a>
+            <a href="#" class="menu-item"><i class="ri-settings-4-line"></i> Association Settings</a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="admin-header">
+            <div class="flex items-center gap-4">
+                <h2 style="font-size: 1.25rem; font-weight: 600;">Association Dashboard</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="btn btn-outline" style="padding: 0.5rem; border-radius: 50%;"><i class="ri-notification-3-line"></i></button>
+                <div class="flex items-center gap-2">
+                    <img src="https://ui-avatars.com/api/?name=Admin+User&background=8b5cf6&color=fff" alt="Admin" style="width: 36px; height: 36px; border-radius: 50%;">
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.875rem;">Rahim Ahmed</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Association Admin</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-area">
+            
+            <!-- 1. Dashboard View -->
+            <div class="view-section active" id="dashboard-view">
+                <!-- Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon secondary"><i class="ri-verified-badge-line"></i></div>
+                        <div>
+                            <div style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500;">Verified Alumni</div>
+                            <div id="verifiedCount" style="font-size: 1.5rem; font-weight: 700;">12,430</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon danger"><i class="ri-time-line"></i></div>
+                        <div>
+                            <div style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500;">Pending Approvals</div>
+                            <div id="pendingCount" style="font-size: 1.5rem; font-weight: 700;">12</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon success"><i class="ri-hand-coin-line"></i></div>
+                        <div>
+                            <div style="color: var(--text-muted); font-size: 0.875rem; font-weight: 500;">Funds Raised (YTD)</div>
+                            <div style="font-size: 1.5rem; font-weight: 700;">৳5,20,000</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Access Modules Preview -->
+                <div class="feature-grid" id="dashboardWidgets">
+                    <!-- Event & Donation cards will show here as previews -->
+                    <div class="feature-card">
+                        <h3 style="color: var(--primary);"><i class="ri-calendar-event-fill"></i> Spotlight Event</h3>
+                        <div style="font-weight: 600; font-size: 1.1rem; margin-bottom: 0.5rem;">Grand Reunion 2026</div>
+                        <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">Annual flagship get-together for Dhaka University Alumni at TSC.</p>
+                        <button class="btn btn-outline" style="width: 100%;" onclick="document.querySelectorAll('.sidebar-menu .menu-item')[3].click();">Manage Events</button>
+                    </div>
+                    <div class="feature-card">
+                        <h3 style="color: var(--success);"><i class="ri-heart-3-fill"></i> Featured Campaign</h3>
+                        <div style="font-weight: 600; font-size: 1.1rem; margin-bottom: 0.5rem;">Alumni Scholarship Fund</div>
+                        <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">Providing financial aid for current underprivileged students.</p>
+                        <button class="btn btn-outline" style="width: 100%;" onclick="document.querySelectorAll('.sidebar-menu .menu-item')[4].click();">Manage Campaigns</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Verification System View -->
+            <div class="view-section" id="verifications-view">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Pending Member Verifications</h3>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Applicant Name</th>
+                                <th>Batch / Dept</th>
+                                <th>Status</th>
+                                <th>Proof Document</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="verificationTableBody">
+                            <!-- Dynamic Content Rendered by main.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 3. Member Directory View -->
+            <div class="view-section" id="directory-view">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Verified Member Directory</h3>
+                    </div>
+                    <div class="search-bar-container" style="border: none; border-bottom: 1px solid var(--border); border-radius: 0;">
+                        <i class="ri-search-line" style="font-size: 1.2rem; color: var(--text-muted); align-self: center;"></i>
+                        <input type="text" id="directorySearch" placeholder="Search by name, department, batch, email..." class="form-control" style="border: none; padding: 0.25rem 0.5rem;" onkeyup="searchDirectory()">
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Member Name</th>
+                                <th>Department</th>
+                                <th>Batch</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="directoryTableBody">
+                            <!-- Dynamic Content Rendered by main.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 4. Events & Reunions View -->
+            <div class="view-section" id="events-view">
+                <div class="flex justify-between items-center" style="margin-bottom: 1.5rem;">
+                    <h3>Manage Events & reunions</h3>
+                    <button class="btn btn-primary" onclick="openModal('newEventModal')"><i class="ri-add-line"></i> Create New Event</button>
+                </div>
+                <div class="grid-2" id="eventsListContainer">
+                    <!-- Events rendered dynamically by main.js -->
+                </div>
+            </div>
+
+            <!-- 5. Donations & Funds View -->
+            <div class="view-section" id="donations-view">
+                <div class="flex justify-between items-center" style="margin-bottom: 1.5rem;">
+                    <h3>Fundraising & Donations</h3>
+                    <button class="btn btn-success" onclick="openModal('newCampaignModal')"><i class="ri-add-line"></i> Create Campaign</button>
+                </div>
+                <div class="grid-2" id="campaignsListContainer">
+                    <!-- Campaigns rendered dynamically by main.js -->
+                </div>
+            </div>
+
+            <!-- 6. News & Notice Board View -->
+            <div class="view-section" id="notices-view">
+                <div class="card">
+                    <div class="flex justify-between items-center" style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+                        <h3>Association Notices</h3>
+                        <button class="btn btn-outline" style="padding: 0.5rem 1rem;">Post New Notice</button>
+                    </div>
+                    <ul style="display: flex; flex-direction: column; gap: 1.25rem;">
+                        <li style="border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+                            <span class="badge" style="background: rgba(79, 70, 229, 0.1); color: var(--primary); font-size: 0.75rem; margin-bottom: 0.5rem; display: inline-block;">General Notice</span>
+                            <h4 style="margin-bottom: 0.25rem;">Reunion Date Confirmed: December 15, 2026</h4>
+                            <p style="font-size: 0.9rem; color: var(--text-muted);">All verified members are requested to register and collect their entry QR cards early.</p>
+                            <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.5rem;">Posted on: Aug 25, 2026</span>
+                        </li>
+                        <li>
+                            <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: var(--success); font-size: 0.75rem; margin-bottom: 0.5rem; display: inline-block;">Membership Notice</span>
+                            <h4 style="margin-bottom: 0.25rem;">Annual Membership Fee Collection Campaign Open</h4>
+                            <p style="font-size: 0.9rem; color: var(--text-muted);">Please clear annual dues online using bKash, Nagad or Visa to remain active member.</p>
+                            <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.5rem;">Posted on: Aug 10, 2026</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 7. Association Settings View -->
+            <div class="view-section" id="settings-view">
+                <div class="card">
+                    <h3 style="margin-bottom: 1.5rem;">Custom Branding & Settings</h3>
+                    <form id="brandingForm" style="max-width: 500px;">
+                        <div class="form-group">
+                            <label for="tenantPrimaryColor">Primary Theme Color (Sidebar & Buttons)</label>
+                            <div class="flex gap-4">
+                                <input type="color" id="tenantPrimaryColor" value="#1e1b4b" class="form-control" style="width: 80px; height: 42px; padding: 0.25rem;">
+                                <span style="align-self: center; font-size: 0.9rem; color: var(--text-muted);">Pick colors that match your university branding.</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Association Subdomain</label>
+                            <input type="text" class="form-control" value="alumni.du-example.com" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Phone Number</label>
+                            <input type="text" class="form-control" value="+880 1712-345678">
+                        </div>
+                        <button class="btn btn-primary" type="submit">Save Settings</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Modal: View Proof Document -->
+    <div id="proofModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Verify Academic Proof Document</h3>
+                <button onclick="closeModal('proofModal')" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h4 style="margin-bottom: 0.5rem;" id="proofApplicantName">Applicant Name</h4>
+                <div id="proofDocPreview" style="margin-top: 1rem;">
+                    <!-- Preview HTML injected by main.js -->
+                </div>
+                <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem; font-size: 0.85rem; background: #e0f2fe; padding: 0.75rem; border-radius: 8px; color: #0369a1;">
+                    <i class="ri-information-line" style="font-size: 1.1rem;"></i>
+                    <span>Please ensure that the details listed in the document match the applicant profile batch and department.</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <span id="proofDocName" style="margin-right: auto; font-size: 0.85rem; color: var(--text-muted); align-self: center;">document.pdf</span>
+                <button class="btn btn-outline" onclick="closeModal('proofModal')">Close Preview</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Digital ID Card -->
+    <div id="idCardModal" class="modal">
+        <div class="modal-content" style="background: transparent; box-shadow: none; max-width: 380px;">
+            <div style="text-align: right; margin-bottom: 0.5rem;">
+                <button onclick="closeModal('idCardModal')" style="background: rgba(255,255,255,0.2); border: none; font-size: 1.25rem; color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer;">&times;</button>
+            </div>
+            
+            <div class="id-card-wrapper">
+                <div class="digital-id-card">
+                    <div class="id-logo">
+                        <i class="ri-graduation-cap-fill"></i>
+                        <span>AlumniHub</span>
+                    </div>
+                    <div id="cardAvatarContainer">
+                        <!-- Graphic Initials avatar dynamically loaded -->
+                    </div>
+                    <div class="id-info">
+                        <div class="id-name" id="cardName">Jamil Hasan</div>
+                        <div class="id-detail" id="cardDept">Computer Science</div>
+                        <div class="id-detail" id="cardBatch">Batch: 2015</div>
+                        <div class="id-detail" id="cardId" style="font-family: monospace; font-weight: 600; margin-top: 0.5rem; color: var(--accent);">ID: DUA-482931</div>
+                    </div>
+                    <div class="id-qr">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=DUA-482931-VERIFIED" alt="QR Verification">
+                    </div>
+                    <div class="id-footer">
+                        <div id="cardExpiry">Valid: 31 Dec 2027</div>
+                        <div style="font-size: 0.6rem; color: rgba(255,255,255,0.4); margin-top: 0.25rem;">SECURE ID • ALUMNI ASSOCIATION</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Create New Event -->
+    <div id="newEventModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Schedule New Event</h3>
+                <button onclick="closeModal('newEventModal')" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);">&times;</button>
+            </div>
+            <form id="newEventForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="eventTitle">Event Title / Name</label>
+                        <input type="text" id="eventTitle" placeholder="e.g. Picnic 2026, Networking Seminar" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventLocation">Event Location / Platform</label>
+                        <input type="text" id="eventLocation" placeholder="e.g. TSC Dhaka College, Zoom Meeting" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="eventDate">Event Date & Time</label>
+                        <input type="text" id="eventDate" placeholder="e.g. 15 December 2026, 10:00 AM" class="form-control" required>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="eventCapacity">Max Capacity (Members)</label>
+                            <input type="number" id="eventCapacity" value="200" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="eventPrice">Ticket Price (৳ / Free)</label>
+                            <input type="text" id="eventPrice" placeholder="e.g. ৳500 or Free" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('newEventModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Schedule Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Create Campaign -->
+    <div id="newCampaignModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Launch Fundraising Campaign</h3>
+                <button onclick="closeModal('newCampaignModal')" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);">&times;</button>
+            </div>
+            <form id="newCampaignForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="campTitle">Campaign Title</label>
+                        <input type="text" id="campTitle" placeholder="e.g. Emergency Flood Relief Fund" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="campDesc">Short Description / Goal Purpose</label>
+                        <textarea id="campDesc" placeholder="Describe what the fund will be used for..." class="form-control" style="height: 100px; resize: none;" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="campGoal">Financial Goal (৳)</label>
+                        <input type="number" id="campGoal" placeholder="e.g. 1000000" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('newCampaignModal')">Cancel</button>
+                    <button type="submit" class="btn btn-success">Launch Campaign</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+        </div>
+    </main>
+
+    <script src="./scripts/main.js"></script>
+</body>
+</html>

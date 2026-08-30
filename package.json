@@ -1,0 +1,17 @@
+{
+  "name": "alumni-association",
+  "version": "1.0.0",
+  "description": "AlumniHub Platform",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "vite": "^5.2.0"
+  }
+}

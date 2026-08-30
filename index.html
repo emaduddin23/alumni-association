@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlumniHub | Multi-Tenant Alumni SaaS Platform</title>
+    <meta name="description" content="The ultimate Multi-Tenant SaaS platform for Universities, Colleges, and Schools to manage their Alumni Associations.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="./styles/main.css">
+    <style>
+        /* Landing Page Specific Styles */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 1rem 0;
+            transition: var(--transition);
+        }
+        
+        header.scrolled {
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-links { display: flex; gap: 2rem; align-items: center; }
+        .nav-links a { color: var(--text-main); font-weight: 500; transition: var(--transition); }
+        .nav-links a:hover { color: var(--primary); }
+        
+        .hero {
+            padding: 10rem 0 6rem;
+            text-align: center;
+            background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.1), transparent 40%),
+                        radial-gradient(circle at bottom left, rgba(79, 70, 229, 0.1), transparent 40%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero h1 { font-size: 4rem; margin-bottom: 1.5rem; letter-spacing: -0.02em; }
+        .hero p { font-size: 1.25rem; color: var(--text-muted); max-width: 700px; margin: 0 auto 2.5rem; }
+        
+        .dashboard-preview {
+            margin-top: 4rem;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            transform: perspective(1000px) rotateX(5deg);
+            transition: var(--transition);
+        }
+        .dashboard-preview:hover {
+            transform: perspective(1000px) rotateX(0deg);
+        }
+
+        .dashboard-preview img { width: 100%; display: block; }
+
+        .features { padding: 6rem 0; background-color: white; }
+        .section-header { text-align: center; margin-bottom: 4rem; }
+        .section-header h2 { font-size: 2.5rem; margin-bottom: 1rem; }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-icon {
+            height: 50px;
+            width: 50px;
+            background-color: rgba(79, 70, 229, 0.1);
+            color: var(--primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .pricing { padding: 6rem 0; background-color: var(--bg-main); }
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .pricing-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2.5rem 2rem;
+            border: 1px solid var(--border);
+            text-align: center;
+            transition: var(--transition);
+        }
+        .pricing-card.popular {
+            border: 2px solid var(--primary);
+            position: relative;
+            transform: scale(1.05);
+            box-shadow: var(--shadow-lg);
+        }
+        .popular-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .price { font-size: 3rem; font-weight: 800; margin: 1.5rem 0; color: var(--text-main); }
+        .price span { font-size: 1rem; color: var(--text-muted); font-weight: 500; }
+        
+        .pricing-features { text-align: left; margin: 2rem 0; }
+        .pricing-features li {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-muted);
+        }
+        .pricing-features li i { color: var(--success); }
+
+        footer {
+            background-color: var(--bg-sidebar);
+            color: var(--text-light);
+            padding: 4rem 0 2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header id="header">
+        <div class="container flex justify-between items-center">
+            <a href="#" class="logo flex items-center gap-2">
+                <i class="ri-graduation-cap-fill" style="font-size: 2rem; color: var(--primary);"></i>
+                <span style="font-size: 1.5rem; font-weight: 800; letter-spacing: -1px;">Alumni<span style="color: var(--primary);">Hub</span></span>
+            </a>
+            <nav class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+                <a href="member-portal.html" class="btn btn-outline" style="padding: 0.5rem 1rem; border-color: var(--secondary); color: var(--secondary);">Alumni Portal</a>
+                <a href="tenant-admin.html" class="btn btn-outline" style="padding: 0.5rem 1rem; border-color: var(--primary); color: var(--primary);">Association Admin</a>
+                <a href="admin.html" class="btn btn-outline" style="padding: 0.5rem 1rem; border-color: #334155; color: #334155;">Super Admin</a>
+                <a href="#pricing" class="btn btn-primary" style="padding: 0.5rem 1rem;">Get Started</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container animate-fade-in">
+            <h1>The Ultimate <span class="text-gradient">Multi-Tenant</span><br>Alumni SaaS Platform</h1>
+            <p>One software, unlimited associations. Empower Universities, Colleges, and Schools to build thriving alumni communities with separate data, branding, and features.</p>
+            <div class="flex justify-center gap-4">
+                <a href="#pricing" class="btn btn-primary"><i class="ri-rocket-line"></i> Start Free Trial</a>
+                <a href="admin.html" class="btn btn-outline"><i class="ri-dashboard-line"></i> View Admin Demo</a>
+            </div>
+            
+            <div class="dashboard-preview">
+                <!-- Fallback to a gradient if no image is available, ideally we use generate_image tool later -->
+                <div style="width: 100%; height: 500px; background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                     <i class="ri-macbook-line" style="font-size: 8rem; color: rgba(255,255,255,0.1);"></i>
+                     <h3 style="color: white; margin-top: 1rem;">Super Admin Dashboard Preview</h3>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>75+ Powerful Modules</h2>
+                <p style="color: var(--text-muted); max-width: 600px; margin: 0 auto;">Everything an institution needs to manage their alumni network, controlled through a single Super Admin panel.</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="card">
+                    <div class="feature-icon"><i class="ri-building-4-line"></i></div>
+                    <h3>Multi-Tenant Architecture</h3>
+                    <p style="color: var(--text-muted); margin-top: 0.5rem;">Host Dhaka College, XYZ University, and ABC School on the same platform, entirely isolated.</p>
+                </div>
+                <div class="card">
+                    <div class="feature-icon"><i class="ri-toggle-line"></i></div>
+                    <h3>Feature Entitlement</h3>
+                    <p style="color: var(--text-muted); margin-top: 0.5rem;">Enable or disable modules (Jobs, Events, Donations, Elections) per tenant with a single click.</p>
+                </div>
+                <div class="card">
+                    <div class="feature-icon"><i class="ri-qr-code-line"></i></div>
+                    <h3>Digital Member ID</h3>
+                    <p style="color: var(--text-muted); margin-top: 0.5rem;">Auto-generated Digital ID cards with QR codes for fast event check-ins and verification.</p>
+                </div>
+                <div class="card">
+                    <div class="feature-icon"><i class="ri-money-dollar-circle-line"></i></div>
+                    <h3>Donations & Fundraising</h3>
+                    <p style="color: var(--text-muted); margin-top: 0.5rem;">Built-in campaigns for scholarships and emergency support with full accounting features.</p>
+                </div>
+                <div class="card">
+                    <div class="feature-icon"><i class="ri-robot-line"></i></div>
+                    <h3>AI Assistant & Analytics</h3>
+                    <p style="color: var(--text-muted); margin-top: 0.5rem;">AI-powered member search, automated email drafting, and smart engagement analytics.</p>
+                </div>
+                <div class="card">
+                    <div class="feature-icon"><i class="ri-global-line"></i></div>
+                    <h3>Custom Domain & White Label</h3>
+                    <p style="color: var(--text-muted); margin-top: 0.5rem;">Tenants can use custom domains (alumni.xyz.edu) and fully customize their branding.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing">
+        <div class="container">
+            <div class="section-header">
+                <h2>Subscription Plans</h2>
+                <p style="color: var(--text-muted);">Flexible SaaS business models for your clients.</p>
+            </div>
+
+            <div class="pricing-grid">
+                <!-- Starter -->
+                <div class="pricing-card">
+                    <h3>Starter</h3>
+                    <div class="price">Free<span>/trial</span></div>
+                    <p style="color: var(--text-muted);">Perfect for small batches</p>
+                    <ul class="pricing-features">
+                        <li><i class="ri-check-line"></i> Up to 1,000 Members</li>
+                        <li><i class="ri-check-line"></i> Basic Directory</li>
+                        <li><i class="ri-check-line"></i> Basic Reports</li>
+                        <li><i class="ri-close-line" style="color: var(--danger);"></i> Election Module</li>
+                        <li><i class="ri-close-line" style="color: var(--danger);"></i> Custom Domain</li>
+                    </ul>
+                    <a href="#" class="btn btn-outline" style="width: 100%;">Start 30-Day Trial</a>
+                </div>
+
+                <!-- Professional -->
+                <div class="pricing-card popular">
+                    <div class="popular-badge">Most Popular</div>
+                    <h3>Professional</h3>
+                    <div class="price">৳10k<span>/mo</span></div>
+                    <p style="color: var(--text-muted);">For growing associations</p>
+                    <ul class="pricing-features">
+                        <li><i class="ri-check-line"></i> Up to 10,000 Members</li>
+                        <li><i class="ri-check-line"></i> Advanced Directory</li>
+                        <li><i class="ri-check-line"></i> Election Module</li>
+                        <li><i class="ri-check-line"></i> Custom Domain</li>
+                        <li><i class="ri-close-line" style="color: var(--danger);"></i> White Label</li>
+                    </ul>
+                    <a href="#" class="btn btn-primary" style="width: 100%;">Subscribe Now</a>
+                </div>
+
+                <!-- Enterprise -->
+                <div class="pricing-card">
+                    <h3>Enterprise</h3>
+                    <div class="price">Custom</div>
+                    <p style="color: var(--text-muted);">For large universities</p>
+                    <ul class="pricing-features">
+                        <li><i class="ri-check-line"></i> Unlimited Members</li>
+                        <li><i class="ri-check-line"></i> Custom Reports</li>
+                        <li><i class="ri-check-line"></i> Full AI Features</li>
+                        <li><i class="ri-check-line"></i> Add-on Marketplace</li>
+                        <li><i class="ri-check-line"></i> Full White Label App</li>
+                    </ul>
+                    <a href="#" class="btn btn-outline" style="width: 100%;">Contact Sales</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container flex justify-between items-center">
+            <div>
+                <a href="#" class="flex items-center gap-2" style="color: white; margin-bottom: 1rem;">
+                    <i class="ri-graduation-cap-fill" style="font-size: 1.5rem; color: var(--primary);"></i>
+                    <span style="font-size: 1.25rem; font-weight: 700;">AlumniHub</span>
+                </a>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">© 2026 AlumniHub SaaS. All rights reserved.</p>
+            </div>
+            <div class="flex gap-4">
+                <a href="#" style="color: var(--text-muted);"><i class="ri-twitter-fill"></i></a>
+                <a href="#" style="color: var(--text-muted);"><i class="ri-linkedin-fill"></i></a>
+                <a href="#" style="color: var(--text-muted);"><i class="ri-github-fill"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="./scripts/main.js"></script>
+</body>
+</html>
