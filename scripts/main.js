@@ -150,6 +150,44 @@ const DB = {
             ];
             localStorage.setItem('alumnihub_jobs', JSON.stringify(defaultJobs));
         }
+
+        if (!localStorage.getItem('alumnihub_notices')) {
+            const defaultNotices = [
+                {
+                    tenantId: 'tenant-du',
+                    title: 'Reunion Date Confirmed: December 15, 2026',
+                    description: 'All verified members are requested to register and collect their entry QR cards early.',
+                    date: '31 Aug 2026'
+                },
+                {
+                    tenantId: 'tenant-du',
+                    title: 'Annual Membership Fee Collection Campaign Open',
+                    description: 'Please clear annual dues online using bKash, Nagad or Visa to remain active member.',
+                    date: '30 Aug 2026'
+                }
+            ];
+            localStorage.setItem('alumnihub_notices', JSON.stringify(defaultNotices));
+        }
+
+        if (!localStorage.getItem('alumnihub_elections')) {
+            const defaultElections = [
+                {
+                    id: 'elect-2026',
+                    tenantId: 'tenant-du',
+                    title: 'Executive Committee Election 2026',
+                    description: 'Vote to elect the new alumni executive committee leaders.',
+                    status: 'Active',
+                    candidates: [
+                        { id: 'cand-1', name: 'Dr. Kamal Hasan', role: 'President Candidate', votes: 120 },
+                        { id: 'cand-2', name: 'Prof. Sadia Islam', role: 'President Candidate', votes: 98 },
+                        { id: 'cand-3', name: 'Dr. Jamil Ahmed', role: 'General Secretary Candidate', votes: 145 },
+                        { id: 'cand-4', name: 'Engr. Kamal Uddin', role: 'General Secretary Candidate', votes: 112 }
+                    ],
+                    votedEmails: []
+                }
+            ];
+            localStorage.setItem('alumnihub_elections', JSON.stringify(defaultElections));
+        }
     },
 
     getTenants() {
@@ -182,6 +220,22 @@ const DB = {
 
     saveCampaigns(campaigns) {
         localStorage.setItem('alumnihub_campaigns', JSON.stringify(campaigns));
+    },
+
+    getNotices() {
+        return JSON.parse(localStorage.getItem('alumnihub_notices')) || [];
+    },
+
+    saveNotices(notices) {
+        localStorage.setItem('alumnihub_notices', JSON.stringify(notices));
+    },
+
+    getElections() {
+        return JSON.parse(localStorage.getItem('alumnihub_elections')) || [];
+    },
+
+    saveElections(elections) {
+        localStorage.setItem('alumnihub_elections', JSON.stringify(elections));
     }
 };
 

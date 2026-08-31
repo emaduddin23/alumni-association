@@ -321,3 +321,61 @@ h1, h2, h3, h4 {
   gap: 1.5rem;
 }
 
+/* Print styles for digital ID card */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .id-card-wrapper, .id-card-wrapper * {
+    visibility: visible;
+  }
+  .id-card-wrapper {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  .sidebar, .admin-header, .btn, header, aside, button {
+    display: none !important;
+  }
+}
+
+/* Component Styles for Elections and Checkout Modal */
+.chart-bar-container {
+  background-color: #f1f5f9;
+  border-radius: 9999px;
+  height: 20px;
+  width: 100%;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+.chart-bar-fill {
+  background-color: var(--primary);
+  height: 100%;
+  transition: width 0.5s ease-out;
+}
+.payment-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+.payment-option {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.9rem;
+}
+.payment-option:hover {
+  background-color: #f8fafc;
+}
+.payment-option.active {
+  border-color: var(--primary);
+  background-color: rgba(79, 70, 229, 0.05);
+  color: var(--primary);
+  font-weight: 600;
+}
+

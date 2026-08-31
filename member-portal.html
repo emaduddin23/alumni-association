@@ -315,6 +315,9 @@
             <a href="#" class="menu-item"><i class="ri-group-line"></i> Alumni Directory</a>
             <a href="#" class="menu-item"><i class="ri-briefcase-line"></i> Jobs & Referrals</a>
             <a href="#" class="menu-item"><i class="ri-message-3-line"></i> Notices & Events</a>
+            <a href="#" class="menu-item"><i class="ri-heart-line"></i> Donations & Fund</a>
+            <a href="#" class="menu-item"><i class="ri-check-double-line"></i> Elections & Voting</a>
+            <a href="#" class="menu-item"><i class="ri-settings-4-line"></i> My Profile</a>
         </div>
     </aside>
 
@@ -367,6 +370,9 @@
                             <div style="font-size: 0.6rem; color: rgba(255,255,255,0.4); margin-top: 0.25rem;">SECURE ID • ALUMNI ASSOCIATION</div>
                         </div>
                     </div>
+                </div>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <button class="btn btn-outline" onclick="window.print()"><i class="ri-printer-line"></i> Print / Save ID Card</button>
                 </div>
             </div>
 
@@ -424,11 +430,87 @@
                 </div>
             </div>
 
+            <!-- VIEW 5: Donations & Philanthropy -->
+            <div class="view-section" id="view-donations">
+                <div class="grid-2">
+                    <div class="card">
+                        <h3 style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Active Campaigns</h3>
+                        <div id="campaignsContainer" class="flex" style="flex-direction: column; gap: 1.5rem;">
+                            <!-- Injected dynamically by JS -->
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">My Contributions</h3>
+                        <div id="contributionsContainer" class="flex" style="flex-direction: column; gap: 1rem; max-height: 400px; overflow-y: auto;">
+                            <!-- Injected dynamically by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 6: Elections & Voting -->
+            <div class="view-section" id="view-elections">
+                <div class="grid-2" id="electionsLayout">
+                    <!-- Injected dynamically by JS -->
+                </div>
+            </div>
+
+            <!-- VIEW 7: My Profile Settings -->
+            <div class="view-section" id="view-profile">
+                <div class="card" style="max-width: 600px; margin: 0 auto;">
+                    <h3 style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Profile Settings</h3>
+                    <form id="profileForm" onsubmit="saveProfile(event)">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="profName" class="form-control" disabled>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">Name cannot be changed for academic verification integrity.</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" id="profEmail" class="form-control" disabled>
+                        </div>
+                        <div class="grid-2" style="grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0;">
+                            <div class="form-group">
+                                <label>Department</label>
+                                <input type="text" id="profDept" class="form-control" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label>Batch</label>
+                                <input type="text" id="profBatch" class="form-control" disabled>
+                            </div>
+                        </div>
+                        <div class="grid-2" style="grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0;">
+                            <div class="form-group">
+                                <label>Profession / Job Title</label>
+                                <input type="text" id="profTitle" class="form-control" placeholder="e.g. Software Engineer">
+                            </div>
+                            <div class="form-group">
+                                <label>Company / Organization</label>
+                                <input type="text" id="profCompany" class="form-control" placeholder="e.g. Google">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="text" id="profPhone" class="form-control" placeholder="e.g. +88017xxxxxxxx">
+                        </div>
+                        <div class="form-group">
+                            <label>Biography / Short Bio</label>
+                            <textarea id="profBio" class="form-control" style="resize: vertical; height: 100px;" placeholder="Tell other alumni about yourself..."></textarea>
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1.5rem;">
+                            <input type="checkbox" id="profPrivacy" style="width: 18px; height: 18px; cursor: pointer;">
+                            <label for="profPrivacy" style="margin-bottom: 0; cursor: pointer; font-weight: normal;">Hide my contact info (email/phone) from the public directory</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;"><i class="ri-save-line"></i> Save Profile Settings</button>
+                    </form>
+                </div>
+            </div>
+
         </div>
     </main>
 
     <script type="module" src="./scripts/main.js"></script>
-    <script>
+    <script type="module">
         // ==========================================
         // MEMBER PORTAL CONTROLLER LOGIC
         // ==========================================
@@ -437,6 +519,7 @@
         let authMode = 'login'; // 'login' or 'signup'
         let currentWizardStep = 1;
         let selectedFile = '';
+        let activePaymentMethod = 'bkash';
 
         // Check login state on load
         document.addEventListener('DOMContentLoaded', () => {
@@ -465,6 +548,10 @@
                 if (!tenant.features.jobs && sidebarTabs[2]) sidebarTabs[2].style.display = 'none';
                 // Events (index 3)
                 if (!tenant.features.events && sidebarTabs[3]) sidebarTabs[3].style.display = 'none';
+                // Donations (index 4)
+                if (!tenant.features.donations && sidebarTabs[4]) sidebarTabs[4].style.display = 'none';
+                // Elections (index 5)
+                if (!tenant.features.elections && sidebarTabs[5]) sidebarTabs[5].style.display = 'none';
 
                 // Apply colors
                 applyPortalTheme(tenant.primaryColor);
@@ -613,7 +700,12 @@
                     stepOTP: 'Done',
                     stepInfo: 'Done',
                     stepProof: 'Done',
-                    proofDoc: selectedFile
+                    proofDoc: selectedFile,
+                    profession: '',
+                    company: '',
+                    phone: '',
+                    bio: '',
+                    privacyPrivate: false
                 };
                 
                 // Add or override existing
@@ -670,21 +762,29 @@
             renderDirectory();
             renderEvents();
             renderJobs();
+            renderDonations();
+            renderElections();
+            renderProfile();
+            renderNotices();
 
             // Set up sidebar tabs switching
             const sidebarTabs = document.querySelectorAll('.sidebar-menu .menu-item');
             const portalHeading = document.getElementById('portalHeading');
             sidebarTabs.forEach((tab, index) => {
-                tab.addEventListener('click', (e) => {
+                // Clear old event listener to prevent duplicate binding
+                const newTab = tab.cloneNode(true);
+                tab.parentNode.replaceChild(newTab, tab);
+                
+                newTab.addEventListener('click', (e) => {
                     e.preventDefault();
-                    sidebarTabs.forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
+                    document.querySelectorAll('.sidebar-menu .menu-item').forEach(t => t.classList.remove('active'));
+                    newTab.classList.add('active');
 
                     const views = document.querySelectorAll('.main-content .view-section');
                     views.forEach(v => v.classList.remove('active'));
                     if (views[index]) views[index].classList.add('active');
 
-                    portalHeading.innerText = tab.innerText.trim();
+                    portalHeading.innerText = newTab.innerText.trim();
                 });
             });
         }
@@ -712,7 +812,27 @@
             document.getElementById('portalCardName').innerText = member.name;
             document.getElementById('portalCardDept').innerText = member.dept;
             document.getElementById('portalCardBatch').innerText = `Batch: ${member.batch}`;
+            
+            const memberId = member.email === 'kamal@example.com' ? 'DUA-823901' : `DUA-${Math.abs(member.email.hashCode()) % 900000 + 100000}`;
+            const cardIdEl = document.querySelector('.id-detail[style*="font-family: monospace"]');
+            if (cardIdEl) cardIdEl.innerText = `ID: ${memberId}`;
+
+            const qrImg = document.querySelector('.id-qr img');
+            if (qrImg) {
+                qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(memberId + '-VERIFIED')}`;
+            }
         }
+
+        // Helper String hashCode method
+        String.prototype.hashCode = function() {
+            let hash = 0;
+            for (let i = 0; i < this.length; i++) {
+                const char = this.charCodeAt(i);
+                hash = (hash << 5) - hash + char;
+                hash |= 0; // Convert to 32bit integer
+            }
+            return hash;
+        };
 
         function renderDirectory() {
             const grid = document.getElementById('memberPortalDirectoryGrid');
@@ -727,9 +847,10 @@
             }
 
             members.forEach(member => {
+                const isPrivate = member.privacyPrivate === true;
                 const initials = member.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
                 const profession = member.profession || 'Software Engineer';
-                const company = member.company || 'Dhaka University Alumni';
+                const company = member.company || 'Not Specified';
 
                 const card = document.createElement('div');
                 card.className = 'card profile-card';
@@ -749,7 +870,10 @@
                         <div>Dept: ${member.dept}</div>
                         <div>Batch: ${member.batch}</div>
                     </div>
-                    <button class="btn btn-outline" style="width: 100%; padding: 0.4rem; font-size: 0.8rem; border-color: var(--primary); color: var(--primary);" onclick="window.location.href='mailto:${member.email}'"><i class="ri-mail-send-line"></i> Contact Alumni</button>
+                    ${isPrivate ? 
+                      `<button class="btn btn-outline" style="width: 100%; padding: 0.4rem; font-size: 0.8rem;" disabled><i class="ri-lock-line"></i> Contact Private</button>` : 
+                      `<button class="btn btn-outline" style="width: 100%; padding: 0.4rem; font-size: 0.8rem; border-color: var(--primary); color: var(--primary);" onclick="window.location.href='mailto:${member.email}'"><i class="ri-mail-send-line"></i> Contact Alumni</button>`
+                    }
                 `;
                 grid.appendChild(card);
             });
@@ -781,7 +905,7 @@
                 return;
             }
 
-            events.forEach(event => {
+            events.forEach((event, index) => {
                 const item = document.createElement('div');
                 item.style.marginBottom = '1.25rem';
                 item.innerHTML = `
@@ -793,14 +917,412 @@
                         <span><i class="ri-map-pin-line"></i> ${event.location}</span> | 
                         <span><i class="ri-time-line"></i> ${event.date}</span>
                     </div>
-                    <button class="btn btn-primary" style="width: 100%; padding: 0.4rem; font-size: 0.8rem; margin-top: 0.5rem;" onclick="buyTicket('${event.title}')">Collect Entry QR Card</button>
+                    <button class="btn btn-primary" style="width: 100%; padding: 0.4rem; font-size: 0.8rem; margin-top: 0.5rem;" onclick="openEventCheckout('${event.title}', '${event.price}', ${index})">Collect Entry QR Card</button>
                 `;
                 container.appendChild(item);
             });
         }
 
-        function buyTicket(eventTitle) {
-            alert(`Ticket generated successfully for "${eventTitle}"! Show your Digital ID QR Code at entrance.`);
+        function openEventCheckout(title, price, index) {
+            document.getElementById('checkoutModalTitle').innerText = 'Event Registration Checkout';
+            document.getElementById('checkoutItemLabel').innerText = `Ticket for: ${title}`;
+            document.getElementById('checkoutAmountDisplay').innerText = price;
+            
+            document.getElementById('checkoutItemType').value = 'event';
+            document.getElementById('checkoutItemId').value = index;
+            document.getElementById('checkoutAmountVal').value = price;
+            
+            const isFree = price.toLowerCase().includes('free') || price.includes('0');
+            if (isFree) {
+                document.getElementById('checkoutInputFields').style.display = 'none';
+                document.getElementById('checkoutPayBtn').innerText = 'Register Free Ticket';
+            } else {
+                document.getElementById('checkoutInputFields').style.display = 'block';
+                document.getElementById('checkoutPayBtn').innerText = 'Pay & Confirm';
+            }
+            
+            selectPaymentMethod('bkash');
+            openModal('checkoutModal');
+        }
+
+        function selectPaymentMethod(method) {
+            activePaymentMethod = method;
+            document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('active'));
+            document.getElementById(`pay-${method}`).classList.add('active');
+            
+            const walletLabel = document.getElementById('checkoutWalletLabel');
+            const walletNum = document.getElementById('checkoutWalletNum');
+            
+            if (method === 'bkash') {
+                walletLabel.innerText = 'bKash Account Number';
+                walletNum.type = 'text';
+                walletNum.placeholder = 'e.g. 017XXXXXXXX';
+            } else if (method === 'nagad') {
+                walletLabel.innerText = 'Nagad Account Number';
+                walletNum.type = 'text';
+                walletNum.placeholder = 'e.g. 017XXXXXXXX';
+            } else {
+                walletLabel.innerText = 'Credit Card Number';
+                walletNum.type = 'text';
+                walletNum.placeholder = 'e.g. 4111 2222 3333 4444';
+            }
+        }
+
+        function processCheckout(e) {
+            e.preventDefault();
+            const type = document.getElementById('checkoutItemType').value;
+            const itemId = document.getElementById('checkoutItemId').value;
+            const amount = document.getElementById('checkoutAmountVal').value;
+            
+            const loggedInMember = JSON.parse(localStorage.getItem('alumnihub_logged_in_member'));
+            
+            if (type === 'event') {
+                const events = DB.getEvents();
+                const tenantEvents = events.filter(ev => ev.tenantId === portalTenantId);
+                const event = tenantEvents[itemId];
+                if (event) {
+                    if (event.sold < event.capacity) {
+                        event.sold = (event.sold || 0) + 1;
+                        // Find index in main events array
+                        const mainIdx = events.findIndex(ev => ev.tenantId === portalTenantId && ev.title === event.title);
+                        if (mainIdx > -1) {
+                            events[mainIdx] = event;
+                            DB.saveEvents(events);
+                        }
+                    }
+                    alert(`Ticket generated successfully for "${event.title}"! An entry QR pass has been assigned to your profile.`);
+                }
+            } else if (type === 'donation') {
+                const campaigns = DB.getCampaigns();
+                const tenantCampaigns = campaigns.filter(c => c.tenantId === portalTenantId);
+                const campaign = tenantCampaigns[itemId];
+                if (campaign) {
+                    const donationAmount = parseInt(amount.replace(/[^0-9]/g, ''));
+                    campaign.raised = (campaign.raised || 0) + donationAmount;
+                    
+                    const mainIdx = campaigns.findIndex(c => c.tenantId === portalTenantId && c.title === campaign.title);
+                    if (mainIdx > -1) {
+                        campaigns[mainIdx] = campaign;
+                        DB.saveCampaigns(campaigns);
+                    }
+                    
+                    // Save history
+                    const history = JSON.parse(localStorage.getItem('alumnihub_donations_history')) || [];
+                    history.push({
+                        email: loggedInMember.email,
+                        tenantId: portalTenantId,
+                        campaignTitle: campaign.title,
+                        amount: donationAmount,
+                        date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+                        paymentMethod: activePaymentMethod.toUpperCase()
+                    });
+                    localStorage.setItem('alumnihub_donations_history', JSON.stringify(history));
+                    
+                    alert(`Thank you for your donation of ৳${donationAmount.toLocaleString()} to "${campaign.title}"!`);
+                }
+            }
+            
+            closeModal('checkoutModal');
+            document.getElementById('checkoutForm').reset();
+            
+            // Re-render
+            renderEvents();
+            renderDonations();
+        }
+
+        function renderDonations() {
+            const container = document.getElementById('campaignsContainer');
+            if (!container) return;
+            
+            const campaigns = DB.getCampaigns().filter(c => c.tenantId === portalTenantId);
+            container.innerHTML = '';
+            
+            campaigns.forEach((campaign, index) => {
+                const percent = Math.min(100, Math.round((campaign.raised / campaign.goal) * 100));
+                const item = document.createElement('div');
+                item.style.border = '1px solid var(--border)';
+                item.style.padding = '1.25rem';
+                item.style.borderRadius = 'var(--radius)';
+                item.style.background = '#f8fafc';
+                
+                item.innerHTML = `
+                    <h4 style="font-size: 1.1rem; color: var(--text-main); font-weight: 700; margin-bottom: 0.5rem;">${campaign.title}</h4>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">${campaign.description}</p>
+                    <div style="background: white; border: 1px solid var(--border); padding: 0.75rem; border-radius: var(--radius); margin-bottom: 1rem;">
+                        <div class="flex justify-between" style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem;">
+                            <span>Raised: ৳${campaign.raised.toLocaleString()}</span>
+                            <span>Goal: ৳${campaign.goal.toLocaleString()}</span>
+                        </div>
+                        <div style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                            <div style="width: ${percent}%; height: 100%; background: var(--primary);"></div>
+                        </div>
+                        <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">${percent}% funded</span>
+                    </div>
+                    <form onsubmit="donateToCampaign(event, ${index})" style="display: flex; gap: 0.5rem;">
+                        <input type="number" placeholder="Enter Amount (৳)" class="form-control" style="padding: 0.5rem 0.75rem;" required min="10">
+                        <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem; white-space: nowrap;"><i class="ri-heart-line"></i> Donate</button>
+                    </form>
+                `;
+                container.appendChild(item);
+            });
+            
+            // Render History
+            const historyContainer = document.getElementById('contributionsContainer');
+            if (historyContainer) {
+                const loggedInMember = JSON.parse(localStorage.getItem('alumnihub_logged_in_member'));
+                const history = JSON.parse(localStorage.getItem('alumnihub_donations_history')) || [];
+                const userHistory = history.filter(h => h.email === loggedInMember.email && h.tenantId === portalTenantId);
+                
+                historyContainer.innerHTML = '';
+                if (userHistory.length === 0) {
+                    historyContainer.innerHTML = '<p style="color: var(--text-muted); text-align: center; font-size: 0.85rem; padding: 2rem;">You have not made any donations yet.</p>';
+                    return;
+                }
+                
+                userHistory.reverse().forEach(h => {
+                    const row = document.createElement('div');
+                    row.style.background = 'white';
+                    row.style.border = '1px solid var(--border)';
+                    row.style.padding = '0.75rem 1rem';
+                    row.style.borderRadius = 'var(--radius)';
+                    row.style.fontSize = '0.85rem';
+                    row.innerHTML = `
+                        <div class="flex justify-between" style="font-weight: 600; color: var(--text-main);">
+                            <span>${h.campaignTitle}</span>
+                            <span style="color: var(--primary);">৳${h.amount.toLocaleString()}</span>
+                        </div>
+                        <div class="flex justify-between" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                            <span>Method: ${h.paymentMethod}</span>
+                            <span>${h.date}</span>
+                        </div>
+                    `;
+                    historyContainer.appendChild(row);
+                });
+            }
+        }
+
+        function donateToCampaign(e, index) {
+            e.preventDefault();
+            const amountInput = e.target.querySelector('input');
+            const amount = parseInt(amountInput.value);
+            
+            const campaigns = DB.getCampaigns();
+            const tenantCampaigns = campaigns.filter(c => c.tenantId === portalTenantId);
+            const campaign = tenantCampaigns[index];
+            
+            if (campaign) {
+                document.getElementById('checkoutModalTitle').innerText = 'Fundraising Donation Checkout';
+                document.getElementById('checkoutItemLabel').innerText = `Contribution to: ${campaign.title}`;
+                document.getElementById('checkoutAmountDisplay').innerText = `৳${amount.toLocaleString()}`;
+                
+                document.getElementById('checkoutItemType').value = 'donation';
+                document.getElementById('checkoutItemId').value = index;
+                document.getElementById('checkoutAmountVal').value = `৳${amount}`;
+                
+                document.getElementById('checkoutInputFields').style.display = 'block';
+                document.getElementById('checkoutPayBtn').innerText = 'Donate Now';
+                
+                selectPaymentMethod('bkash');
+                openModal('checkoutModal');
+            }
+        }
+
+        function renderElections() {
+            const container = document.getElementById('electionsLayout');
+            if (!container) return;
+            
+            const elections = DB.getElections().filter(e => e.tenantId === portalTenantId);
+            container.innerHTML = '';
+            
+            if (elections.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: span 2; padding: 2rem;">No active elections running at the moment.</p>';
+                return;
+            }
+            
+            const loggedInMember = JSON.parse(localStorage.getItem('alumnihub_logged_in_member'));
+            
+            elections.forEach((election, electIndex) => {
+                const hasVoted = election.votedEmails && election.votedEmails.includes(loggedInMember.email);
+                
+                const card1 = document.createElement('div');
+                card1.className = 'card';
+                card1.style.display = 'flex';
+                card1.style.flexDirection = 'column';
+                card1.style.justifyContent = 'space-between';
+                
+                card1.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-center" style="margin-bottom: 1rem;">
+                            <h3 style="color: var(--text-main); font-weight: 700;">${election.title}</h3>
+                            <span class="badge" style="${hasVoted ? 'background:#d1fae5; color:#047857;' : 'background:#fee2e2; color:#b91c1c;'}">${hasVoted ? 'Vote Submitted' : 'Awaiting Vote'}</span>
+                        </div>
+                        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem;">${election.description}</p>
+                        
+                        <form onsubmit="castVote(event, ${electIndex})">
+                            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                ${election.candidates.map((cand, idx) => `
+                                    <div style="border: 1px solid var(--border); padding: 0.75rem; border-radius: var(--radius); background: white; display: flex; align-items: center; gap: 0.75rem;">
+                                        <input type="radio" name="candidate" id="cand-${cand.id}" value="${cand.id}" style="width: 18px; height: 18px; cursor: pointer;" ${hasVoted ? 'disabled' : 'required'}>
+                                        <label for="cand-${cand.id}" style="margin-bottom: 0; cursor: pointer; flex-grow: 1;">
+                                            <div style="font-weight: 600; color: var(--text-main);">${cand.name}</div>
+                                            <div style="font-size: 0.75rem; color: var(--text-muted);">${cand.role}</div>
+                                        </label>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;" ${hasVoted ? 'disabled' : ''}>
+                                <i class="ri-check-double-line"></i> ${hasVoted ? 'Ballot Cast Confirmed' : 'Cast Secret Ballot'}
+                            </button>
+                        </form>
+                    </div>
+                `;
+                
+                const card2 = document.createElement('div');
+                card2.className = 'card';
+                
+                const roles = [...new Set(election.candidates.map(c => c.role))];
+                
+                card2.innerHTML = `
+                    <h3 style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Live Standing Results</h3>
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        ${roles.map(role => {
+                            const roleCands = election.candidates.filter(c => c.role === role);
+                            const totalRoleVotes = roleCands.reduce((sum, c) => sum + c.votes, 0) || 1;
+                            
+                            return `
+                                <div>
+                                    <div style="font-weight: 700; font-size: 0.95rem; color: var(--primary); margin-bottom: 0.75rem;">${role}</div>
+                                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                        ${roleCands.map(cand => {
+                                            const pct = Math.round((cand.votes / totalRoleVotes) * 100);
+                                            return `
+                                                <div>
+                                                    <div class="flex justify-between" style="font-size: 0.85rem; font-weight: 600;">
+                                                        <span>${cand.name}</span>
+                                                        <span>${cand.votes} votes (${pct}%)</span>
+                                                    </div>
+                                                    <div class="chart-bar-container">
+                                                        <div class="chart-bar-fill" style="width: ${pct}%;"></div>
+                                                    </div>
+                                                </div>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+                
+                container.appendChild(card1);
+                container.appendChild(card2);
+            });
+        }
+
+        function castVote(e, electIndex) {
+            e.preventDefault();
+            const selectedRadio = e.target.querySelector('input[name="candidate"]:checked');
+            if (!selectedRadio) return;
+            const candidateId = selectedRadio.value;
+            
+            const elections = DB.getElections();
+            const tenantElections = elections.filter(el => el.tenantId === portalTenantId);
+            const election = tenantElections[electIndex];
+            
+            if (election) {
+                const loggedInMember = JSON.parse(localStorage.getItem('alumnihub_logged_in_member'));
+                
+                if (election.votedEmails && election.votedEmails.includes(loggedInMember.email)) {
+                    alert('You have already cast your ballot for this election.');
+                    return;
+                }
+                
+                const candidate = election.candidates.find(c => c.id === candidateId);
+                if (candidate) {
+                    candidate.votes = (candidate.votes || 0) + 1;
+                    election.votedEmails = election.votedEmails || [];
+                    election.votedEmails.push(loggedInMember.email);
+                    
+                    const mainIdx = elections.findIndex(el => el.tenantId === portalTenantId && el.title === election.title);
+                    if (mainIdx > -1) {
+                        elections[mainIdx] = election;
+                        DB.saveElections(elections);
+                    }
+                    
+                    alert('Your secret ballot has been cast and recorded securely. Results are updated live.');
+                    renderElections();
+                }
+            }
+        }
+
+        function renderProfile() {
+            const member = JSON.parse(localStorage.getItem('alumnihub_logged_in_member'));
+            if (!member) return;
+            
+            document.getElementById('profName').value = member.name;
+            document.getElementById('profEmail').value = member.email;
+            document.getElementById('profDept').value = member.dept;
+            document.getElementById('profBatch').value = member.batch;
+            
+            document.getElementById('profTitle').value = member.profession || '';
+            document.getElementById('profCompany').value = member.company || '';
+            document.getElementById('profPhone').value = member.phone || '';
+            document.getElementById('profBio').value = member.bio || '';
+            document.getElementById('profPrivacy').checked = member.privacyPrivate === true;
+        }
+
+        function saveProfile(e) {
+            e.preventDefault();
+            const title = document.getElementById('profTitle').value;
+            const company = document.getElementById('profCompany').value;
+            const phone = document.getElementById('profPhone').value;
+            const bio = document.getElementById('profBio').value;
+            const privacy = document.getElementById('profPrivacy').checked;
+            
+            const member = JSON.parse(localStorage.getItem('alumnihub_logged_in_member'));
+            member.profession = title;
+            member.company = company;
+            member.phone = phone;
+            member.bio = bio;
+            member.privacyPrivate = privacy;
+            
+            const members = DB.getMembers();
+            const idx = members.findIndex(m => m.email === member.email && m.tenantId === portalTenantId);
+            if (idx > -1) {
+                members[idx] = member;
+                DB.saveMembers(members);
+            }
+            
+            localStorage.setItem('alumnihub_logged_in_member', JSON.stringify(member));
+            alert('Profile settings saved successfully!');
+            showMemberLayout(member);
+        }
+
+        function renderNotices() {
+            const noticeList = document.getElementById('memberEventsContainer').parentElement.previousElementSibling.querySelector('ul');
+            if (!noticeList) return;
+            
+            const notices = DB.getNotices().filter(n => n.tenantId === portalTenantId);
+            noticeList.innerHTML = '';
+            
+            if (notices.length === 0) {
+                noticeList.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem; padding: 1rem 0;">No active notices.</p>';
+                return;
+            }
+            
+            notices.forEach((notice, index) => {
+                const li = document.createElement('li');
+                if (index > 0) {
+                    li.style.borderTop = '1px solid var(--border)';
+                    li.style.paddingTop = '1rem';
+                }
+                li.innerHTML = `
+                    <div style="font-weight: 600; color: var(--text-main);">${notice.title}</div>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">${notice.description}</p>
+                    <span style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-top: 0.5rem;"><i class="ri-time-line"></i> Posted on ${notice.date}</span>
+                `;
+                noticeList.appendChild(li);
+            });
         }
 
         function renderJobs() {
@@ -867,6 +1389,22 @@
             closeModal('newJobModal');
             document.getElementById('newJobForm').reset();
         }
+
+        // Attach DOM controllers globally to window for HTML element handlers
+        window.toggleAuthMode = toggleAuthMode;
+        window.handleAuthSubmit = handleAuthSubmit;
+        window.wizardNext = wizardNext;
+        window.wizardPrev = wizardPrev;
+        window.handleFileSelected = handleFileSelected;
+        window.logoutMember = logoutMember;
+        window.searchMemberPortalDirectory = searchMemberPortalDirectory;
+        window.openEventCheckout = openEventCheckout;
+        window.selectPaymentMethod = selectPaymentMethod;
+        window.processCheckout = processCheckout;
+        window.donateToCampaign = donateToCampaign;
+        window.castVote = castVote;
+        window.saveProfile = saveProfile;
+        window.createNewJob = createNewJob;
     </script>
     <!-- Modal: Post a Job -->
     <div id="newJobModal" class="modal">
@@ -906,6 +1444,60 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline" onclick="closeModal('newJobModal')">Cancel</button>
                     <button type="submit" class="btn btn-primary">Post Job</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Simulated Payment Checkout -->
+    <div id="checkoutModal" class="modal">
+        <div class="modal-content" style="max-width: 480px;">
+            <div class="modal-header">
+                <h3 id="checkoutModalTitle">Secure Checkout</h3>
+                <button onclick="closeModal('checkoutModal')" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);">&times;</button>
+            </div>
+            <form id="checkoutForm" onsubmit="processCheckout(event)">
+                <input type="hidden" id="checkoutItemType">
+                <input type="hidden" id="checkoutItemId">
+                <input type="hidden" id="checkoutAmountVal">
+                
+                <div class="modal-body">
+                    <div style="background: #f8fafc; padding: 1rem; border-radius: var(--radius); margin-bottom: 1.25rem; border: 1px solid var(--border);">
+                        <div class="flex justify-between" style="font-weight: 600; font-size: 1rem; color: var(--text-main);">
+                            <span id="checkoutItemLabel">Event Ticket</span>
+                            <span id="checkoutAmountDisplay">৳0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Select Payment Gateway</label>
+                        <div class="payment-selector">
+                            <div class="payment-option active" onclick="selectPaymentMethod('bkash')" id="pay-bkash">
+                                <i class="ri-wallet-3-line" style="font-size: 1.5rem; display: block; margin-bottom: 0.25rem; color: #e11d48;"></i> bKash
+                            </div>
+                            <div class="payment-option" onclick="selectPaymentMethod('nagad')" id="pay-nagad">
+                                <i class="ri-smartphone-line" style="font-size: 1.5rem; display: block; margin-bottom: 0.25rem; color: #ea580c;"></i> Nagad
+                            </div>
+                            <div class="payment-option" onclick="selectPaymentMethod('card')" id="pay-card">
+                                <i class="ri-bank-card-line" style="font-size: 1.5rem; display: block; margin-bottom: 0.25rem; color: var(--primary);"></i> Card
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="checkoutInputFields">
+                        <div class="form-group" id="checkoutWalletGroup">
+                            <label id="checkoutWalletLabel">bKash Account Number</label>
+                            <input type="text" id="checkoutWalletNum" class="form-control" placeholder="e.g. 017XXXXXXXX" required>
+                        </div>
+                        <div class="form-group" id="checkoutPinGroup">
+                            <label>Account PIN</label>
+                            <input type="password" id="checkoutPIN" class="form-control" placeholder="••••" maxlength="4" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('checkoutModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="checkoutPayBtn">Pay & Confirm</button>
                 </div>
             </form>
         </div>
