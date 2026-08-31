@@ -751,3 +751,27 @@ function searchTenants() {
     });
 }
 
+// Expose variables and functions globally so that inline HTML handlers can access them
+window.DB = DB;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.renderTenantsTable = renderTenantsTable;
+window.createNewTenant = createNewTenant;
+window.toggleTenantStatus = toggleTenantStatus;
+window.openFeatureModal = openFeatureModal;
+window.saveFeatures = saveFeatures;
+window.renderVerificationTable = renderVerificationTable;
+window.viewProof = viewProof;
+window.approveMember = approveMember;
+window.rejectMember = rejectMember;
+window.renderTenantDirectory = renderTenantDirectory;
+window.searchDirectory = searchDirectory;
+window.viewMemberCard = viewMemberCard;
+window.createNewEvent = createNewEvent;
+window.renderEventsList = renderEventsList;
+window.createNewCampaign = createNewCampaign;
+window.renderCampaignsList = renderCampaignsList;
+window.saveTenantBranding = saveTenantBranding;
+window.applyTenantTheme = applyTenantTheme;
+window.searchTenants = searchTenants;
+
