@@ -790,6 +790,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const brandingForm = document.getElementById('brandingForm');
         if (brandingForm) brandingForm.addEventListener('submit', saveTenantBranding);
     }
+
+    // Bind sidebar toggle button click handler for admin panels
+    const toggleBtn = document.getElementById('sidebarToggleBtn');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) sidebar.classList.toggle('collapsed');
+        });
+    }
 });
 
 function searchTenants() {

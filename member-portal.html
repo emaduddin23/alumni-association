@@ -325,6 +325,7 @@
     <main class="main-content">
         <header class="admin-header">
             <div class="flex items-center gap-4">
+                <button id="sidebarToggleBtn" class="btn btn-outline" style="padding: 0.5rem 0.75rem; border-color: var(--border); color: var(--text-main);"><i class="ri-menu-line"></i></button>
                 <h2 style="font-size: 1.25rem; font-weight: 600;" id="portalHeading">My Digital ID</h2>
             </div>
             <div class="flex items-center gap-4">
@@ -562,6 +563,15 @@
                 showMemberLayout(member);
             } else {
                 showAuthLayout();
+            }
+
+            // Bind sidebar toggle button click handler
+            const toggleBtn = document.getElementById('sidebarToggleBtn');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', () => {
+                    const sidebar = document.querySelector('.sidebar');
+                    if (sidebar) sidebar.classList.toggle('collapsed');
+                });
             }
         });
 
