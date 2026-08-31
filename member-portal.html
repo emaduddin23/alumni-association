@@ -718,8 +718,13 @@
                 applyPortalTheme(tenant.primaryColor);
             }
 
-            const member = JSON.parse(localStorage.getItem('alumnihub_logged_in_member'));
+            let member = JSON.parse(localStorage.getItem('alumnihub_logged_in_member'));
             if (member && member.tenantId === portalTenantId) {
+                const fresh = DB.getMembers().find(m => m.email === member.email && m.tenantId === portalTenantId);
+                if (fresh) {
+                    member = fresh;
+                    localStorage.setItem('alumnihub_logged_in_member', JSON.stringify(member));
+                }
                 showMemberLayout(member);
             } else {
                 showAuthLayout();

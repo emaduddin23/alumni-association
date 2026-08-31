@@ -570,11 +570,14 @@ function viewProof(name, docName) {
 }
 
 function approveMember(email) {
+    console.log('approveMember called for email:', email);
     const members = DB.getMembers();
     const member = members.find(m => m.email === email && m.tenantId === currentTenantId);
     if (member) {
         member.status = 'Approved';
         DB.saveMembers(members);
+        console.log('Member approved successfully in DB:', email);
+        alert(`Member ${email} approved successfully!`);
         
         // Dynamic row fade-out animation
         const rowId = `row-${email.replace(/[@.]/g, '-')}`;
@@ -589,6 +592,9 @@ function approveMember(email) {
         } else {
             renderVerificationTable();
         }
+    } else {
+        console.error('Member not found for email:', email, 'tenant:', currentTenantId);
+        alert(`Error: Member ${email} not found in DB!`);
     }
 }
 
