@@ -241,12 +241,33 @@
 
             <!-- Step 1: Setup Details -->
             <div class="wizard-step active" id="step-1-view">
-                <h3 style="margin-bottom: 1.5rem;">Create Account Details</h3>
+                <h3 style="margin-bottom: 1.25rem;">Create Account Details</h3>
+                
                 <div class="form-group">
                     <label>Full Name</label>
                     <input type="text" id="wizName" class="form-control" placeholder="e.g. Jamil Hasan" required>
                 </div>
+                
                 <div class="form-group">
+                    <label>Email Address</label>
+                    <div class="flex gap-2">
+                        <input type="email" id="wizEmail" class="form-control" placeholder="e.g. jamil@example.com" required>
+                        <button type="button" class="btn btn-primary" id="btnSendOTP" style="white-space: nowrap; padding: 0 1rem;" onclick="sendOTPToEmail()">Send OTP</button>
+                    </div>
+                </div>
+
+                <!-- OTP Input Area (Hidden initially) -->
+                <div class="form-group" id="otpInputArea" style="display: none; background: #f8fafc; padding: 1rem; border-radius: var(--radius); border: 1px solid var(--border); margin-top: 0.75rem; transition: all 0.3s ease;">
+                    <label style="color: var(--text-main); font-weight: 600;">Enter 4-Digit OTP Code</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="wizOTPCode" class="form-control" placeholder="e.g. 1234" maxlength="4" style="text-align: center; font-size: 1.2rem; letter-spacing: 0.25rem; font-weight: bold;">
+                        <button type="button" class="btn btn-success" style="white-space: nowrap;" onclick="verifyOTPInline()">Verify</button>
+                    </div>
+                    <span id="otp-error-text" style="color: var(--danger); font-size: 0.8rem; display: none; margin-top: 0.5rem; font-weight: 500;">Invalid code! Try 1234</span>
+                    <span id="otp-success-text" style="color: var(--success); font-size: 0.8rem; display: none; margin-top: 0.5rem; font-weight: 600;"><i class="ri-checkbox-circle-line"></i> Email Verified Successfully!</span>
+                </div>
+
+                <div class="form-group" style="margin-top: 1rem;">
                     <label>Choose Password</label>
                     <input type="password" id="wizPassword" class="form-control" placeholder="••••••••" required oninput="checkWizPasswordStrength(this.value)">
                     <div class="strength-meter-container">
@@ -254,23 +275,12 @@
                         <div class="strength-meter-bar" id="strength-bar-2"></div>
                         <div class="strength-meter-bar" id="strength-bar-3"></div>
                     </div>
-                    <span id="strength-text" class="strength-text" style="color: var(--text-muted);">Strength: Type password</span>
+                    <span id="strength-text" class="strength-text" style="color: var(--text-muted); font-size: 0.8rem;">Strength: Type password</span>
                 </div>
-                <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="wizardNext(1)">Next Step</button>
-            </div>
 
-            <!-- Step OTP: Email Verification -->
-            <div class="wizard-step" id="step-otp-view">
-                <h3 style="margin-bottom: 0.5rem;">Verify Your Email</h3>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">We have sent a verification code to your email. Enter the 4-digit code to continue.</p>
-                <div class="form-group">
-                    <label>4-Digit Verification Code</label>
-                    <input type="text" id="wizOTPCode" class="form-control" placeholder="e.g. 1234" maxlength="4" style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem;" required>
-                    <span id="otp-error-text" style="color: var(--danger); font-size: 0.8rem; display: none; margin-top: 0.5rem;">Invalid code! Try 1234</span>
-                </div>
                 <div class="flex gap-4" style="margin-top: 1.5rem;">
-                    <button class="btn btn-outline" style="width: 50%;" onclick="goToStep1FromOTP()">Back</button>
-                    <button class="btn btn-primary" style="width: 50%;" onclick="verifyOTPAndProceed()">Verify Code</button>
+                    <button class="btn btn-outline" style="width: 30%;" onclick="logoutMember()">Cancel</button>
+                    <button class="btn btn-primary" style="width: 70%;" id="btnWizStep1Next" onclick="wizardNext(1)" disabled>Next Step</button>
                 </div>
             </div>
 
@@ -374,7 +384,7 @@
             <a href="#" class="menu-item"><i class="ri-message-3-line"></i> Notices & Events</a>
             <a href="#" class="menu-item"><i class="ri-heart-line"></i> Donations & Fund</a>
             <a href="#" class="menu-item"><i class="ri-check-double-line"></i> Elections & Voting</a>
-            <a href="#" class="menu-item"><i class="ri-git-branch-line"></i> Mentorship Program</a>
+            <a href="#" class="menu-item" id="sidebarMentorshipTab"><i class="ri-git-branch-line"></i> Mentorship Program <span id="mentorshipBadge" style="background: var(--accent); color: white; border-radius: 50%; width: 8px; height: 8px; display: inline-block; margin-left: auto; display: none;"></span></a>
             <a href="#" class="menu-item"><i class="ri-settings-4-line"></i> My Profile</a>
         </div>
     </aside>
@@ -518,9 +528,9 @@
             <!-- VIEW: Mentorship Program -->
             <div class="view-section" id="view-mentorship">
                 <div class="mentorship-tabs">
-                    <button class="mentorship-tab-btn active" onclick="switchMentorshipTab('find-mentor')" id="tab-find-mentor">Find a Mentor</button>
-                    <button class="mentorship-tab-btn" onclick="switchMentorshipTab('become-mentor')" id="tab-become-mentor">Become a Mentor</button>
-                    <button class="mentorship-tab-btn" onclick="switchMentorshipTab('requests')" id="tab-requests">Mentorship Requests</button>
+                    <button class="mentorship-tab-btn active" id="tab-find-mentor">Find a Mentor</button>
+                    <button class="mentorship-tab-btn" id="tab-become-mentor">Become a Mentor</button>
+                    <button class="mentorship-tab-btn" id="tab-requests">Mentorship Requests</button>
                 </div>
 
                 <!-- Tab content: Find a Mentor -->
@@ -550,6 +560,18 @@
                             <div class="form-group">
                                 <label for="profileMentorExpertise">My Expertise / Fields of Mentorship</label>
                                 <input type="text" id="profileMentorExpertise" class="form-control" placeholder="e.g. Software Engineering, Management, Finance, Physics">
+                            </div>
+                            <div class="form-group">
+                                <label for="profileMentorLinkedIn">My LinkedIn Profile URL</label>
+                                <input type="url" id="profileMentorLinkedIn" class="form-control" placeholder="https://linkedin.com/in/username">
+                            </div>
+                            <div class="form-group">
+                                <label for="profileMentorContact">Preferred Contact Method</label>
+                                <select id="profileMentorContact" class="form-control">
+                                    <option value="Email">Email</option>
+                                    <option value="LinkedIn">LinkedIn</option>
+                                    <option value="Phone">Phone</option>
+                                </select>
                             </div>
                             <button type="submit" class="btn btn-primary" style="width: 100%;">Save Mentor Status</button>
                         </form>
@@ -788,6 +810,29 @@
                 document.getElementById('fileNameDisplay').innerText = 'Click to browse or drag file here';
                 document.getElementById('proofNextBtn').disabled = true;
                 
+                // Reset OTP controls on SignUp initiation
+                const wizEmail = document.getElementById('wizEmail');
+                const btnSendOTP = document.getElementById('btnSendOTP');
+                const wizOTP = document.getElementById('wizOTPCode');
+                const otpArea = document.getElementById('otpInputArea');
+                const otpSucc = document.getElementById('otp-success-text');
+                const otpErr = document.getElementById('otp-error-text');
+                const nextBtn = document.getElementById('btnWizStep1Next');
+
+                if (wizEmail) {
+                    wizEmail.value = email || '';
+                    wizEmail.disabled = false;
+                }
+                if (btnSendOTP) btnSendOTP.disabled = false;
+                if (wizOTP) {
+                    wizOTP.value = '';
+                    wizOTP.disabled = false;
+                }
+                if (otpArea) otpArea.style.display = 'none';
+                if (otpSucc) otpSucc.style.display = 'none';
+                if (otpErr) otpErr.style.display = 'none';
+                if (nextBtn) nextBtn.disabled = true;
+
                 document.getElementById('authScreen').style.display = 'none';
                 document.getElementById('wizardScreen').style.display = 'flex';
                 currentWizardStep = 1;
@@ -824,7 +869,7 @@
             } else if (step === 3) {
                 // Submit to local storage DB
                 const name = document.getElementById('wizName').value;
-                const email = document.getElementById('authEmail').value;
+                const email = document.getElementById('wizEmail').value;
                 const dept = document.getElementById('wizDept').value;
                 const batch = document.getElementById('wizBatch').value;
                 
@@ -911,6 +956,21 @@
             renderNotices();
             renderMentorship();
 
+            // Bind mentorship sub-tabs click events dynamically
+            const tabFind = document.getElementById('tab-find-mentor');
+            const tabBecome = document.getElementById('tab-become-mentor');
+            const tabRequests = document.getElementById('tab-requests');
+
+            if (tabFind) {
+                tabFind.addEventListener('click', () => switchMentorshipTab('find-mentor'));
+            }
+            if (tabBecome) {
+                tabBecome.addEventListener('click', () => switchMentorshipTab('become-mentor'));
+            }
+            if (tabRequests) {
+                tabRequests.addEventListener('click', () => switchMentorshipTab('requests'));
+            }
+
             // Set up sidebar tabs switching
             const sidebarTabs = document.querySelectorAll('.sidebar-menu .menu-item');
             const portalHeading = document.getElementById('portalHeading');
@@ -921,12 +981,22 @@
                 
                 newTab.addEventListener('click', (e) => {
                     e.preventDefault();
+                    console.log('Sidebar tab clicked, index:', index, 'Label:', newTab.innerText.trim());
                     document.querySelectorAll('.sidebar-menu .menu-item').forEach(t => t.classList.remove('active'));
                     newTab.classList.add('active');
 
                     const views = document.querySelectorAll('.main-content .view-section');
-                    views.forEach(v => v.classList.remove('active'));
-                    if (views[index]) views[index].classList.add('active');
+                    console.log('Total views found:', views.length);
+                    views.forEach((v, i) => {
+                        v.classList.remove('active');
+                        console.log(`View ${i}: id=${v.id}, classes=${v.className}`);
+                    });
+                    if (views[index]) {
+                        views[index].classList.add('active');
+                        console.log('Activated view:', views[index].id);
+                    } else {
+                        console.error('No view found at index:', index);
+                    }
 
                     portalHeading.innerText = newTab.innerText.trim();
                 });
@@ -1592,20 +1662,39 @@
             }
         }
 
-        function goToStep1FromOTP() {
-            document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
-            document.getElementById('step-1-view').classList.add('active');
+        function sendOTPToEmail() {
+            const email = document.getElementById('wizEmail').value;
+            if (!email) {
+                alert('Please enter an email address first.');
+                return;
+            }
+            const area = document.getElementById('otpInputArea');
+            if (area) {
+                area.style.display = 'block';
+            }
+            alert(`OTP sent successfully to ${email}! (Dummy Code: 1234)`);
         }
 
-        function verifyOTPAndProceed() {
+        function verifyOTPInline() {
             const code = document.getElementById('wizOTPCode').value;
             const err = document.getElementById('otp-error-text');
+            const succ = document.getElementById('otp-success-text');
+            const nextBtn = document.getElementById('btnWizStep1Next');
+            
             if (code === '1234') {
                 if (err) err.style.display = 'none';
-                currentWizardStep = 2;
-                showWizardStep(2);
+                if (succ) succ.style.display = 'block';
+                
+                // Disable inputs on success
+                document.getElementById('wizEmail').disabled = true;
+                document.getElementById('btnSendOTP').disabled = true;
+                document.getElementById('wizOTPCode').disabled = true;
+                
+                // Enable next button
+                if (nextBtn) nextBtn.disabled = false;
             } else {
                 if (err) err.style.display = 'block';
+                if (succ) succ.style.display = 'none';
             }
         }
 
@@ -1897,12 +1986,16 @@
             e.preventDefault();
             const isMentor = document.getElementById('profileIsMentor').checked;
             const expertise = document.getElementById('profileMentorExpertise').value;
+            const linkedIn = document.getElementById('profileMentorLinkedIn').value;
+            const contactPref = document.getElementById('profileMentorContact').value;
             
             const loggedIn = JSON.parse(localStorage.getItem('alumnihub_logged_in_member'));
             if (!loggedIn) return;
 
             loggedIn.isMentor = isMentor;
             loggedIn.mentorExpertise = expertise;
+            loggedIn.mentorLinkedIn = linkedIn;
+            loggedIn.mentorContact = contactPref;
             localStorage.setItem('alumnihub_logged_in_member', JSON.stringify(loggedIn));
 
             // Sync with all members list
@@ -1911,6 +2004,8 @@
             if (idx > -1) {
                 members[idx].isMentor = isMentor;
                 members[idx].mentorExpertise = expertise;
+                members[idx].mentorLinkedIn = linkedIn;
+                members[idx].mentorContact = contactPref;
                 DB.saveMembers(members);
             }
 
@@ -1949,13 +2044,26 @@
                     if (req.status === 'Pending') {
                         actionButtons = `
                             <div class="flex gap-2" style="margin-top: 1rem;">
-                                <button class="btn btn-outline" style="padding: 0.3rem 0.75rem; font-size: 0.8rem; border-color: var(--success); color: var(--success);" onclick="respondToMentorshipRequest('${req.id}', 'Accepted')"><i class="ri-check-line"></i> Accept</button>
+                                <button class="btn btn-outline" style="padding: 0.3rem 0.75rem; font-size: 0.8rem; border-color: var(--success); color: var(--success);" onclick="respondToMentorshipRequest('${req.id}', 'Accepted')"><i class="ri-check-line"></i> Accept Request</button>
                                 <button class="btn btn-outline" style="padding: 0.3rem 0.75rem; font-size: 0.8rem; border-color: var(--danger); color: var(--danger);" onclick="respondToMentorshipRequest('${req.id}', 'Declined')"><i class="ri-close-line"></i> Decline</button>
                             </div>
                         `;
                     } else {
                         const color = req.status === 'Accepted' ? 'color: var(--success);' : 'color: var(--danger);';
-                        actionButtons = `<div style="font-weight: 700; font-size: 0.85rem; margin-top: 0.5rem; ${color}">Status: ${req.status}</div>`;
+                        let sharedDetails = '';
+                        if (req.status === 'Accepted' && (req.meetingLink || req.acceptNote)) {
+                            sharedDetails = `
+                                <div style="margin-top: 0.75rem; padding: 0.5rem; background: #ecfdf5; border-radius: 6px; font-size: 0.8rem; border: 1px solid #a7f3d0;">
+                                    <strong>Shared with Mentee:</strong>
+                                    ${req.meetingLink ? `<div style="margin-top: 0.25rem;">Meet Link: <a href="${req.meetingLink}" target="_blank" style="color: var(--primary); text-decoration: underline;">${req.meetingLink}</a></div>` : ''}
+                                    ${req.acceptNote ? `<div style="margin-top: 0.25rem; font-style: italic;">Note: "${req.acceptNote}"</div>` : ''}
+                                </div>
+                            `;
+                        }
+                        actionButtons = `
+                            <div style="font-weight: 700; font-size: 0.85rem; margin-top: 0.5rem; ${color}">Status: ${req.status}</div>
+                            ${sharedDetails}
+                        `;
                     }
 
                     card.innerHTML = `
@@ -1982,25 +2090,105 @@
                     
                     const statusColor = req.status === 'Pending' ? 'color: var(--warning);' : (req.status === 'Accepted' ? 'color: var(--success);' : 'color: var(--danger);');
                     
+                    let mentorConnectHTML = '';
+                    if (req.status === 'Accepted' && receiver) {
+                        mentorConnectHTML = `
+                            <div style="margin-top: 0.75rem; padding: 0.75rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; font-size: 0.8rem;">
+                                <div style="font-weight: 700; color: #166534; margin-bottom: 0.5rem;">Mentor Connection Details:</div>
+                                <div>Preferred Contact: <strong>${receiver.mentorContact || 'Email'}</strong></div>
+                                <div style="margin-top: 0.25rem;">Email: <a href="mailto:${receiver.email}" style="color: var(--primary); text-decoration: underline;">${receiver.email}</a></div>
+                                ${receiver.phone ? `<div style="margin-top: 0.25rem;">Phone: <strong>${receiver.phone}</strong></div>` : ''}
+                                ${receiver.mentorLinkedIn ? `<div style="margin-top: 0.5rem;"><a href="${receiver.mentorLinkedIn}" target="_blank" class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;"><i class="ri-linkedin-box-line"></i> Connect on LinkedIn</a></div>` : ''}
+                                
+                                ${req.meetingLink ? `
+                                    <div style="margin-top: 0.75rem; border-top: 1px dashed #bbf7d0; padding-top: 0.5rem;">
+                                        <div style="font-weight: 600;">Meeting Link shared by Mentor:</div>
+                                        <a href="${req.meetingLink}" target="_blank" class="btn btn-success" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; margin-top: 0.25rem; display: inline-flex; align-items: center; gap: 0.25rem;"><i class="ri-video-chat-line"></i> Join Session / Google Meet</a>
+                                    </div>
+                                ` : ''}
+                                ${req.acceptNote ? `<div style="margin-top: 0.5rem; font-style: italic; color: #166534;">Note from Mentor: "${req.acceptNote}"</div>` : ''}
+                            </div>
+                        `;
+                    }
+
                     card.innerHTML = `
                         <div style="font-weight: 700; color: var(--text-main);">Request to: ${receiverName}</div>
                         <div style="font-size: 0.8rem; font-weight: bold; ${statusColor} margin-bottom: 0.5rem;">Status: ${req.status}</div>
                         <p style="font-size: 0.85rem; background: #f8fafc; padding: 0.75rem; border-radius: var(--radius); border: 1px solid var(--border); color: var(--text-muted); line-height: 1.4;">${req.message}</p>
                         <span style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-top: 0.5rem;"><i class="ri-calendar-line"></i> Sent on ${req.date}</span>
+                        ${mentorConnectHTML}
                     `;
                     sentContainer.appendChild(card);
                 });
             }
         }
 
-        function respondToMentorshipRequest(id, status) {
+        function openAcceptRequestModal(id) {
+            document.getElementById('acceptReqId').value = id;
+            document.getElementById('acceptMeetingLink').value = '';
+            document.getElementById('acceptNote').value = '';
+            
+            const modal = document.getElementById('acceptMentorshipModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                setTimeout(() => modal.classList.add('active'), 10);
+            }
+        }
+
+        function submitAcceptRequest(e) {
+            e.preventDefault();
+            const id = document.getElementById('acceptReqId').value;
+            const meetLink = document.getElementById('acceptMeetingLink').value;
+            const note = document.getElementById('acceptNote').value;
+
             const requests = JSON.parse(localStorage.getItem('alumnihub_mentorships')) || [];
             const idx = requests.findIndex(r => r.id === id);
             if (idx > -1) {
-                requests[idx].status = status;
+                requests[idx].status = 'Accepted';
+                requests[idx].meetingLink = meetLink;
+                requests[idx].acceptNote = note;
                 localStorage.setItem('alumnihub_mentorships', JSON.stringify(requests));
-                alert(`Request ${status.toLowerCase()}!`);
-                renderMentorshipRequestsList();
+                closeModal('acceptMentorshipModal');
+                alert('Mentorship request accepted and mentee notified!');
+                renderMentorship();
+            }
+        }
+
+        function respondToMentorshipRequest(id, status) {
+            if (status === 'Accepted') {
+                openAcceptRequestModal(id);
+            } else {
+                const requests = JSON.parse(localStorage.getItem('alumnihub_mentorships')) || [];
+                const idx = requests.findIndex(r => r.id === id);
+                if (idx > -1) {
+                    requests[idx].status = status;
+                    localStorage.setItem('alumnihub_mentorships', JSON.stringify(requests));
+                    alert(`Request declined.`);
+                    renderMentorship();
+                }
+            }
+        }
+
+        function updateMentorshipBadge() {
+            const loggedIn = JSON.parse(localStorage.getItem('alumnihub_logged_in_member'));
+            if (!loggedIn) return;
+
+            const requests = JSON.parse(localStorage.getItem('alumnihub_mentorships')) || [];
+            const pendingReceived = requests.filter(r => r.receiverEmail === loggedIn.email && r.status === 'Pending' && r.tenantId === portalTenantId);
+            
+            const badge = document.getElementById('mentorshipBadge');
+            if (badge) {
+                if (pendingReceived.length > 0) {
+                    badge.innerText = pendingReceived.length;
+                    badge.style.display = 'inline-block';
+                    badge.style.padding = '0.1rem 0.4rem';
+                    badge.style.fontSize = '0.7rem';
+                    badge.style.fontWeight = 'bold';
+                    badge.style.borderRadius = '10px';
+                    badge.style.color = 'white';
+                } else {
+                    badge.style.display = 'none';
+                }
             }
         }
 
@@ -2020,8 +2208,8 @@
         window.saveProfile = saveProfile;
         window.createNewJob = createNewJob;
         window.checkWizPasswordStrength = checkWizPasswordStrength;
-        window.goToStep1FromOTP = goToStep1FromOTP;
-        window.verifyOTPAndProceed = verifyOTPAndProceed;
+        window.sendOTPToEmail = sendOTPToEmail;
+        window.verifyOTPInline = verifyOTPInline;
         window.handleAvatarSelected = handleAvatarSelected;
         window.handleProfAvatarSelected = handleProfAvatarSelected;
         window.clearUploadedProof = clearUploadedProof;
@@ -2032,6 +2220,8 @@
         window.submitMentorshipRequest = submitMentorshipRequest;
         window.saveMentorProfile = saveMentorProfile;
         window.respondToMentorshipRequest = respondToMentorshipRequest;
+        window.submitAcceptRequest = submitAcceptRequest;
+        window.updateMentorshipBadge = updateMentorshipBadge;
     </script>
     <!-- Modal: Post a Job -->
     <div id="newJobModal" class="modal">
@@ -2152,6 +2342,33 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline" onclick="closeModal('requestMentorshipModal')">Cancel</button>
                     <button type="submit" class="btn btn-primary">Send Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Modal: Accept Mentorship Request -->
+    <div id="acceptMentorshipModal" class="modal">
+        <div class="modal-content" style="max-width: 480px;">
+            <div class="modal-header">
+                <h3>Accept Mentorship Request</h3>
+                <button onclick="closeModal('acceptMentorshipModal')" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);">&times;</button>
+            </div>
+            <form id="acceptMentorshipForm" onsubmit="submitAcceptRequest(event)">
+                <input type="hidden" id="acceptReqId">
+                <div class="modal-body">
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem;">Provide an optional meeting link (Google Meet, Zoom, Calendly) or contact instructions for the mentee.</p>
+                    <div class="form-group">
+                        <label for="acceptMeetingLink">Meeting / Calendly Link (Optional)</label>
+                        <input type="url" id="acceptMeetingLink" class="form-control" placeholder="e.g. https://meet.google.com/abc-defg-hij">
+                    </div>
+                    <div class="form-group">
+                        <label for="acceptNote">Short Note / Instructions (Optional)</label>
+                        <textarea id="acceptNote" class="form-control" style="height: 80px; resize: none;" placeholder="e.g. Hi! I would love to talk. Let's schedule a call on Sunday afternoon..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('acceptMentorshipModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Accept & Confirm</button>
                 </div>
             </form>
         </div>
