@@ -53,6 +53,12 @@ const DB = {
             localStorage.setItem('alumnihub_tenants', JSON.stringify(defaultTenants));
         }
 
+        const existingMembers = JSON.parse(localStorage.getItem('alumnihub_members'));
+        if (existingMembers && existingMembers.length > 0 && !('memberTier' in existingMembers[0])) {
+            localStorage.removeItem('alumnihub_members');
+            localStorage.removeItem('alumnihub_mentorships');
+        }
+
         if (!localStorage.getItem('alumnihub_members')) {
             const defaultMembers = [
                 {
@@ -65,7 +71,14 @@ const DB = {
                     stepOTP: 'Done',
                     stepInfo: 'Done',
                     stepProof: 'Done',
-                    proofDoc: 'Student ID.pdf'
+                    proofDoc: 'Student ID.pdf',
+                    avatar: '',
+                    memberTier: 'Student',
+                    isMentor: false,
+                    mentorExpertise: '',
+                    phone: '+8801511223344',
+                    bio: 'A student seeking career opportunities.',
+                    privacyPrivate: false
                 },
                 {
                     tenantId: 'tenant-du',
@@ -77,7 +90,14 @@ const DB = {
                     stepOTP: 'Done',
                     stepInfo: 'Done',
                     stepProof: 'Pending',
-                    proofDoc: ''
+                    proofDoc: '',
+                    avatar: '',
+                    memberTier: 'Student',
+                    isMentor: false,
+                    mentorExpertise: '',
+                    phone: '+8801911223344',
+                    bio: 'Interested in astrophysics research.',
+                    privacyPrivate: false
                 },
                 {
                     tenantId: 'tenant-du',
@@ -89,7 +109,14 @@ const DB = {
                     stepOTP: 'Done',
                     stepInfo: 'Done',
                     stepProof: 'Done',
-                    proofDoc: 'Certificate.pdf'
+                    proofDoc: 'Certificate.pdf',
+                    avatar: '',
+                    memberTier: 'Life',
+                    isMentor: true,
+                    mentorExpertise: 'Mathematics & Data Science',
+                    phone: '+8801711223344',
+                    bio: 'Data Scientist with 8+ years of industry experience. Happy to mentor juniors.',
+                    privacyPrivate: false
                 }
             ];
             localStorage.setItem('alumnihub_members', JSON.stringify(defaultMembers));
@@ -188,6 +215,21 @@ const DB = {
             ];
             localStorage.setItem('alumnihub_elections', JSON.stringify(defaultElections));
         }
+
+        if (!localStorage.getItem('alumnihub_mentorships')) {
+            const defaultMentorships = [
+                {
+                    id: 'req-1',
+                    tenantId: 'tenant-du',
+                    senderEmail: 'jamil@example.com',
+                    receiverEmail: 'kamal@example.com',
+                    message: 'Hello Kamal, I would love to get your mentorship in Data Science.',
+                    status: 'Pending',
+                    date: '31 Aug 2026'
+                }
+            ];
+            localStorage.setItem('alumnihub_mentorships', JSON.stringify(defaultMentorships));
+        }
     },
 
     getTenants() {
@@ -236,6 +278,14 @@ const DB = {
 
     saveElections(elections) {
         localStorage.setItem('alumnihub_elections', JSON.stringify(elections));
+    },
+
+    getMentorships() {
+        return JSON.parse(localStorage.getItem('alumnihub_mentorships')) || [];
+    },
+
+    saveMentorships(mentorships) {
+        localStorage.setItem('alumnihub_mentorships', JSON.stringify(mentorships));
     }
 };
 

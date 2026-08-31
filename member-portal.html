@@ -248,14 +248,35 @@
                 </div>
                 <div class="form-group">
                     <label>Choose Password</label>
-                    <input type="password" id="wizPassword" class="form-control" placeholder="••••••••" required>
+                    <input type="password" id="wizPassword" class="form-control" placeholder="••••••••" required oninput="checkWizPasswordStrength(this.value)">
+                    <div class="strength-meter-container">
+                        <div class="strength-meter-bar" id="strength-bar-1"></div>
+                        <div class="strength-meter-bar" id="strength-bar-2"></div>
+                        <div class="strength-meter-bar" id="strength-bar-3"></div>
+                    </div>
+                    <span id="strength-text" class="strength-text" style="color: var(--text-muted);">Strength: Type password</span>
                 </div>
                 <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="wizardNext(1)">Next Step</button>
             </div>
 
+            <!-- Step OTP: Email Verification -->
+            <div class="wizard-step" id="step-otp-view">
+                <h3 style="margin-bottom: 0.5rem;">Verify Your Email</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">We have sent a verification code to your email. Enter the 4-digit code to continue.</p>
+                <div class="form-group">
+                    <label>4-Digit Verification Code</label>
+                    <input type="text" id="wizOTPCode" class="form-control" placeholder="e.g. 1234" maxlength="4" style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem;" required>
+                    <span id="otp-error-text" style="color: var(--danger); font-size: 0.8rem; display: none; margin-top: 0.5rem;">Invalid code! Try 1234</span>
+                </div>
+                <div class="flex gap-4" style="margin-top: 1.5rem;">
+                    <button class="btn btn-outline" style="width: 50%;" onclick="goToStep1FromOTP()">Back</button>
+                    <button class="btn btn-primary" style="width: 50%;" onclick="verifyOTPAndProceed()">Verify Code</button>
+                </div>
+            </div>
+
             <!-- Step 2: Academic Info -->
             <div class="wizard-step" id="step-2-view">
-                <h3 style="margin-bottom: 1.5rem;">Academic details</h3>
+                <h3 style="margin-bottom: 1.5rem;">Academic Details</h3>
                 <div class="form-group">
                     <label>Department / Major</label>
                     <input type="text" id="wizDept" class="form-control" placeholder="e.g. Computer Science" required>
@@ -264,22 +285,58 @@
                     <label>Passing Year (Batch)</label>
                     <input type="number" id="wizBatch" class="form-control" placeholder="e.g. 2015" required>
                 </div>
+                <div class="form-group">
+                    <label>Membership Tier</label>
+                    <select id="wizTier" class="form-control">
+                        <option value="General">General Member</option>
+                        <option value="Life">Life Member</option>
+                        <option value="Student">Student Alumnus</option>
+                    </select>
+                </div>
                 <div class="flex gap-4" style="margin-top: 1.5rem;">
                     <button class="btn btn-outline" style="width: 50%;" onclick="wizardPrev(2)">Back</button>
                     <button class="btn btn-primary" style="width: 50%;" onclick="wizardNext(2)">Next Step</button>
                 </div>
             </div>
 
-            <!-- Step 3: Proof Upload -->
+            <!-- Step 3: Proof Upload & Profile Picture -->
             <div class="wizard-step" id="step-3-view">
-                <h3 style="margin-bottom: 1.5rem;">Upload Student ID / Certificate</h3>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">To verify your alumni status, please upload a photo/PDF of your university ID or degree certificate.</p>
-                <div class="form-group" style="text-align: center; border: 2px dashed var(--border); border-radius: 12px; padding: 2.5rem 1rem; cursor: pointer; transition: var(--transition);" onclick="document.getElementById('proofFileInput').click()">
-                    <i class="ri-upload-cloud-2-line" style="font-size: 3rem; color: var(--primary);"></i>
-                    <p style="font-size: 0.9rem; font-weight: 500; margin-top: 0.5rem;" id="fileNameDisplay">Click to browse or drag file here</p>
-                    <span style="font-size: 0.75rem; color: var(--text-muted);">Supports PDF, PNG, JPG (Max 5MB)</span>
-                    <input type="file" id="proofFileInput" style="display: none;" onchange="handleFileSelected(event)">
+                <h3 style="margin-bottom: 1rem;">Profile Picture & Proof Document</h3>
+                
+                <div class="form-group">
+                    <label>Profile Picture</label>
+                    <div class="avatar-upload-wrapper">
+                        <div class="avatar-preview-box" id="avatarPreviewBox">
+                            <i class="ri-user-line" style="font-size: 2rem; color: var(--text-muted);"></i>
+                        </div>
+                        <div>
+                            <input type="file" id="avatarFileInput" accept="image/*" style="display: none;" onchange="handleAvatarSelected(event)">
+                            <button type="button" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="document.getElementById('avatarFileInput').click()">Upload Photo</button>
+                            <span style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">JPG, PNG (Max 2MB)</span>
+                        </div>
+                    </div>
                 </div>
+
+                <div class="form-group">
+                    <label>Upload Student ID / Certificate</label>
+                    <div style="text-align: center; border: 2px dashed var(--border); border-radius: 12px; padding: 1.5rem 1rem; cursor: pointer; transition: var(--transition);" onclick="document.getElementById('proofFileInput').click()">
+                        <i class="ri-upload-cloud-2-line" style="font-size: 2rem; color: var(--primary);"></i>
+                        <p style="font-size: 0.85rem; font-weight: 500; margin-top: 0.5rem;" id="fileNameDisplay">Click to browse or drag file here</p>
+                        <span style="font-size: 0.7rem; color: var(--text-muted);">Supports PDF, PNG, JPG (Max 5MB)</span>
+                        <input type="file" id="proofFileInput" style="display: none;" onchange="handleFileSelected(event)">
+                    </div>
+                    <div id="fileUploadPreview" style="display: none;">
+                        <div class="file-preview-box">
+                            <i class="ri-file-text-line file-preview-icon"></i>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-weight: 600; font-size: 0.85rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" id="previewFileName">document.pdf</div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted);" id="previewFileSize">1.2 MB</div>
+                            </div>
+                            <button type="button" style="background: none; border: none; color: var(--danger); cursor: pointer;" onclick="clearUploadedProof(event)"><i class="ri-delete-bin-line"></i></button>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="flex gap-4" style="margin-top: 1.5rem;">
                     <button class="btn btn-outline" style="width: 50%;" onclick="wizardPrev(3)">Back</button>
                     <button class="btn btn-primary" style="width: 50%;" onclick="wizardNext(3)" id="proofNextBtn" disabled>Submit Application</button>
@@ -317,6 +374,7 @@
             <a href="#" class="menu-item"><i class="ri-message-3-line"></i> Notices & Events</a>
             <a href="#" class="menu-item"><i class="ri-heart-line"></i> Donations & Fund</a>
             <a href="#" class="menu-item"><i class="ri-check-double-line"></i> Elections & Voting</a>
+            <a href="#" class="menu-item"><i class="ri-git-branch-line"></i> Mentorship Program</a>
             <a href="#" class="menu-item"><i class="ri-settings-4-line"></i> My Profile</a>
         </div>
     </aside>
@@ -372,8 +430,9 @@
                         </div>
                     </div>
                 </div>
-                <div style="text-align: center; margin-top: 2rem;">
+                <div style="text-align: center; margin-top: 2rem; display: flex; justify-content: center; gap: 1rem;">
                     <button class="btn btn-outline" onclick="window.print()"><i class="ri-printer-line"></i> Print / Save ID Card</button>
+                    <button class="btn btn-primary" onclick="downloadIDCardPNG()"><i class="ri-download-2-line"></i> Download ID Card (PNG)</button>
                 </div>
             </div>
 
@@ -456,15 +515,94 @@
                 </div>
             </div>
 
+            <!-- VIEW: Mentorship Program -->
+            <div class="view-section" id="view-mentorship">
+                <div class="mentorship-tabs">
+                    <button class="mentorship-tab-btn active" onclick="switchMentorshipTab('find-mentor')" id="tab-find-mentor">Find a Mentor</button>
+                    <button class="mentorship-tab-btn" onclick="switchMentorshipTab('become-mentor')" id="tab-become-mentor">Become a Mentor</button>
+                    <button class="mentorship-tab-btn" onclick="switchMentorshipTab('requests')" id="tab-requests">Mentorship Requests</button>
+                </div>
+
+                <!-- Tab content: Find a Mentor -->
+                <div class="mentorship-tab-content" id="m-content-find-mentor">
+                    <div style="background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem;">
+                        <h3 style="margin-bottom: 0.5rem;"><i class="ri-search-line"></i> Search Alumni Mentors</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Connect with experienced alumni for career guidance, mock interviews, and industry connections.</p>
+                        <div class="flex gap-4">
+                            <input type="text" id="mentorSearchInput" class="form-control" placeholder="Search by name or expertise (e.g. Data Science, Web Development)..." oninput="filterMentors()">
+                        </div>
+                    </div>
+                    <div class="grid-3" id="mentorsListContainer">
+                        <!-- Mentors injected dynamically -->
+                    </div>
+                </div>
+
+                <!-- Tab content: Become a Mentor -->
+                <div class="mentorship-tab-content" id="m-content-become-mentor" style="display: none;">
+                    <div class="card" style="max-width: 600px; margin: 0 auto;">
+                        <h3 style="margin-bottom: 0.5rem;"><i class="ri-git-branch-line"></i> Mentor Profile Configuration</h3>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">Opt-in to the mentorship program to help junior alumni, students, and peers in their career paths.</p>
+                        <form id="mentorOptInForm" onsubmit="saveMentorProfile(event)">
+                            <div class="form-group" style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+                                <input type="checkbox" id="profileIsMentor" style="width: 20px; height: 20px; cursor: pointer;">
+                                <label for="profileIsMentor" style="margin-bottom: 0; font-weight: 600; cursor: pointer;">Register me as a Mentor</label>
+                            </div>
+                            <div class="form-group">
+                                <label for="profileMentorExpertise">My Expertise / Fields of Mentorship</label>
+                                <input type="text" id="profileMentorExpertise" class="form-control" placeholder="e.g. Software Engineering, Management, Finance, Physics">
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">Save Mentor Status</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Tab content: Requests -->
+                <div class="mentorship-tab-content" id="m-content-requests" style="display: none;">
+                    <div class="grid-2">
+                        <div>
+                            <h3 style="margin-bottom: 1rem; color: var(--text-main);"><i class="ri-mail-unread-line"></i> Received Requests</h3>
+                            <div id="receivedRequestsContainer" class="flex" style="flex-direction: column; gap: 1rem;">
+                                <!-- Injected dynamically -->
+                            </div>
+                        </div>
+                        <div>
+                            <h3 style="margin-bottom: 1rem; color: var(--text-main);"><i class="ri-mail-send-line"></i> Sent Requests</h3>
+                            <div id="sentRequestsContainer" class="flex" style="flex-direction: column; gap: 1rem;">
+                                <!-- Injected dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- VIEW 7: My Profile Settings -->
             <div class="view-section" id="view-profile">
                 <div class="card" style="max-width: 600px; margin: 0 auto;">
                     <h3 style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Profile Settings</h3>
                     <form id="profileForm" onsubmit="saveProfile(event)">
                         <div class="form-group">
-                            <label>Full Name</label>
-                            <input type="text" id="profName" class="form-control" disabled>
-                            <span style="font-size: 0.75rem; color: var(--text-muted);">Name cannot be changed for academic verification integrity.</span>
+                            <label>Profile Picture</label>
+                            <div class="avatar-upload-wrapper">
+                                <div class="avatar-preview-box" id="profAvatarPreviewBox">
+                                    <i class="ri-user-line" style="font-size: 2rem; color: var(--text-muted);"></i>
+                                </div>
+                                <div>
+                                    <input type="file" id="profAvatarFileInput" accept="image/*" style="display: none;" onchange="handleProfAvatarSelected(event)">
+                                    <button type="button" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="document.getElementById('profAvatarFileInput').click()">Change Photo</button>
+                                    <span style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">JPG, PNG (Max 2MB)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid-2" style="grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0;">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" id="profName" class="form-control" disabled>
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">Verification integrity locked.</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Membership Tier</label>
+                                <input type="text" id="profTier" class="form-control" style="font-weight: 600;" disabled>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Email Address</label>
@@ -563,15 +701,6 @@
                 showMemberLayout(member);
             } else {
                 showAuthLayout();
-            }
-
-            // Bind sidebar toggle button click handler
-            const toggleBtn = document.getElementById('sidebarToggleBtn');
-            if (toggleBtn) {
-                toggleBtn.addEventListener('click', () => {
-                    const sidebar = document.querySelector('.sidebar');
-                    if (sidebar) sidebar.classList.toggle('collapsed');
-                });
             }
         });
 
@@ -765,7 +894,11 @@
             document.getElementById('userHeaderName').innerText = member.name;
             document.getElementById('userHeaderDept').innerText = member.dept;
             const initials = member.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
-            document.getElementById('userHeaderAvatar').innerText = initials;
+            if (member.avatar) {
+                document.getElementById('userHeaderAvatar').innerHTML = `<img src="${member.avatar}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+            } else {
+                document.getElementById('userHeaderAvatar').innerText = initials;
+            }
 
             // Render views
             renderIDCard(member);
@@ -776,6 +909,7 @@
             renderElections();
             renderProfile();
             renderNotices();
+            renderMentorship();
 
             // Set up sidebar tabs switching
             const sidebarTabs = document.querySelectorAll('.sidebar-menu .menu-item');
@@ -814,11 +948,19 @@
 
         function renderIDCard(member) {
             const initials = member.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
-            document.getElementById('portalCardAvatar').innerHTML = `
-                <div style="width: 110px; height: 110px; border-radius: 50%; background: linear-gradient(135deg, var(--secondary), var(--primary)); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 800; color: white;">
-                    ${initials}
-                </div>
-            `;
+            if (member.avatar) {
+                document.getElementById('portalCardAvatar').innerHTML = `
+                    <div style="width: 110px; height: 110px; border-radius: 50%; overflow: hidden; border: 3px solid white; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center;">
+                        <img src="${member.avatar}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                `;
+            } else {
+                document.getElementById('portalCardAvatar').innerHTML = `
+                    <div style="width: 110px; height: 110px; border-radius: 50%; background: linear-gradient(135deg, var(--secondary), var(--primary)); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 800; color: white;">
+                        ${initials}
+                    </div>
+                `;
+            }
             document.getElementById('portalCardName').innerText = member.name;
             document.getElementById('portalCardDept').innerText = member.dept;
             document.getElementById('portalCardBatch').innerText = `Batch: ${member.batch}`;
@@ -861,6 +1003,7 @@
                 const initials = member.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
                 const profession = member.profession || 'Software Engineer';
                 const company = member.company || 'Not Specified';
+                const tier = member.memberTier || 'General';
 
                 const card = document.createElement('div');
                 card.className = 'card profile-card';
@@ -870,9 +1013,13 @@
                 card.style.alignItems = 'center';
                 card.style.padding = '1.5rem';
                 
+                const avatarHTML = member.avatar ? `<img src="${member.avatar}" alt="${member.name}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 1rem; box-shadow: var(--shadow-sm); border: 2px solid white;">` : `<div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--secondary), var(--primary)); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 1rem; box-shadow: var(--shadow-sm);">${initials}</div>`;
+                const badgeColor = tier === 'Life' ? 'background: #fef3c7; color: #d97706;' : (tier === 'Student' ? 'background: #ecfdf5; color: #059669;' : 'background: #f1f5f9; color: #475569;');
+
                 card.innerHTML = `
-                    <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--secondary), var(--primary)); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; color: white; margin-bottom: 1rem; box-shadow: var(--shadow-sm);">
-                        ${initials}
+                    <div style="position: relative;">
+                        ${avatarHTML}
+                        <span class="badge" style="position: absolute; bottom: 5px; right: -10px; font-size: 0.65rem; ${badgeColor}">${tier}</span>
                     </div>
                     <h4 style="margin-bottom: 0.25rem; font-size: 1.1rem; color: var(--text-main);">${member.name}</h4>
                     <p style="font-size: 0.85rem; font-weight: 600; color: var(--primary); margin-bottom: 0.75rem;">${profession} @ ${company}</p>
@@ -1400,6 +1547,463 @@
             document.getElementById('newJobForm').reset();
         }
 
+        // ==========================================
+        // PASSWORD STRENGTH & OTP VERIFICATION
+        // ==========================================
+        let selectedAvatar = '';
+
+        function checkWizPasswordStrength(val) {
+            const bar1 = document.getElementById('strength-bar-1');
+            const bar2 = document.getElementById('strength-bar-2');
+            const bar3 = document.getElementById('strength-bar-3');
+            const txt = document.getElementById('strength-text');
+            if (!bar1) return;
+            
+            bar1.className = 'strength-meter-bar';
+            bar2.className = 'strength-meter-bar';
+            bar3.className = 'strength-meter-bar';
+
+            if (!val) {
+                txt.innerText = 'Strength: Type password';
+                txt.style.color = 'var(--text-muted)';
+                return;
+            }
+
+            let score = 0;
+            if (val.length >= 6) score++;
+            if (/[A-Z]/.test(val) && /[0-9]/.test(val)) score++;
+            if (/[^A-Za-z0-9]/.test(val)) score++;
+
+            if (score === 1) {
+                bar1.classList.add('active-weak');
+                txt.innerText = 'Strength: Weak';
+                txt.style.color = 'var(--danger)';
+            } else if (score === 2) {
+                bar1.classList.add('active-medium');
+                bar2.classList.add('active-medium');
+                txt.innerText = 'Strength: Medium';
+                txt.style.color = 'var(--warning)';
+            } else if (score >= 3) {
+                bar1.classList.add('active-strong');
+                bar2.classList.add('active-strong');
+                bar3.classList.add('active-strong');
+                txt.innerText = 'Strength: Strong';
+                txt.style.color = 'var(--success)';
+            }
+        }
+
+        function goToStep1FromOTP() {
+            document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
+            document.getElementById('step-1-view').classList.add('active');
+        }
+
+        function verifyOTPAndProceed() {
+            const code = document.getElementById('wizOTPCode').value;
+            const err = document.getElementById('otp-error-text');
+            if (code === '1234') {
+                if (err) err.style.display = 'none';
+                currentWizardStep = 2;
+                showWizardStep(2);
+            } else {
+                if (err) err.style.display = 'block';
+            }
+        }
+
+        // ==========================================
+        // IMAGE & FILE UPLOADS
+        // ==========================================
+        function handleAvatarSelected(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    selectedAvatar = event.target.result;
+                    const previewBox = document.getElementById('avatarPreviewBox');
+                    if (previewBox) previewBox.innerHTML = `<img src="${selectedAvatar}" alt="Avatar Preview">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleProfAvatarSelected(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const dataUrl = event.target.result;
+                    const previewBox = document.getElementById('profAvatarPreviewBox');
+                    if (previewBox) previewBox.innerHTML = `<img src="${dataUrl}" alt="Profile Avatar">`;
+                    
+                    // Save to user object
+                    const loggedIn = JSON.parse(localStorage.getItem('alumnihub_logged_in_member'));
+                    if (loggedIn) {
+                        loggedIn.avatar = dataUrl;
+                        localStorage.setItem('alumnihub_logged_in_member', JSON.stringify(loggedIn));
+                        
+                        // Update in DB
+                        const members = DB.getMembers();
+                        const idx = members.findIndex(m => m.email === loggedIn.email && m.tenantId === portalTenantId);
+                        if (idx > -1) {
+                            members[idx].avatar = dataUrl;
+                            DB.saveMembers(members);
+                        }
+                        
+                        // Sync display
+                        showMemberLayout(loggedIn);
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // ==========================================
+        // ID CARD CANVAS DOWNLOAD
+        // ==========================================
+        function downloadIDCardPNG() {
+            const member = JSON.parse(localStorage.getItem('alumnihub_logged_in_member'));
+            if (!member) return;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 350;
+            canvas.height = 550;
+            const ctx = canvas.getContext('2d');
+
+            const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#1e1b4b';
+            ctx.fillStyle = primaryColor;
+            
+            // Rounded corners helper
+            const radius = 20;
+            ctx.beginPath();
+            ctx.moveTo(radius, 0);
+            ctx.lineTo(canvas.width - radius, 0);
+            ctx.quadraticCurveTo(canvas.width, 0, canvas.width, radius);
+            ctx.lineTo(canvas.width, canvas.height - radius);
+            ctx.quadraticCurveTo(canvas.width, canvas.height, canvas.width - radius, canvas.height);
+            ctx.lineTo(radius, canvas.height);
+            ctx.quadraticCurveTo(0, canvas.height, 0, canvas.height - radius);
+            ctx.lineTo(0, radius);
+            ctx.quadraticCurveTo(0, 0, radius, 0);
+            ctx.closePath();
+            ctx.fill();
+
+            // Header Title
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 20px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('🎓 AlumniHub', canvas.width / 2, 50);
+
+            // Handle Avatar Rendering
+            if (member.avatar) {
+                const img = new Image();
+                img.onload = function() {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(canvas.width / 2, 140, 45, 0, Math.PI * 2);
+                    ctx.closePath();
+                    ctx.clip();
+                    ctx.drawImage(img, canvas.width / 2 - 45, 140 - 45, 90, 90);
+                    ctx.restore();
+                    drawDetails();
+                };
+                img.src = member.avatar;
+            } else {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, 140, 45, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 30px Inter, sans-serif';
+                const initials = member.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+                ctx.fillText(initials, canvas.width / 2, 150);
+                drawDetails();
+            }
+
+            function drawDetails() {
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 22px Inter, sans-serif';
+                ctx.fillText(member.name, canvas.width / 2, 220);
+
+                ctx.fillStyle = '#cbd5e1';
+                ctx.font = '14px Inter, sans-serif';
+                ctx.fillText(member.dept, canvas.width / 2, 245);
+                ctx.fillText('Batch: ' + member.batch, canvas.width / 2, 265);
+
+                const tier = member.memberTier || 'General';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.beginPath();
+                if (ctx.roundRect) ctx.roundRect(canvas.width / 2 - 60, 280, 120, 24, 6);
+                else ctx.rect(canvas.width / 2 - 60, 280, 120, 24);
+                ctx.fill();
+
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 11px Inter, sans-serif';
+                ctx.fillText(tier.toUpperCase() + ' MEMBER', canvas.width / 2, 296);
+
+                const hashId = member.email === 'kamal@example.com' ? 'DUA-823901' : `DUA-${Math.abs(member.email.hashCode()) % 900000 + 100000}`;
+                ctx.fillStyle = '#f43f5e';
+                ctx.font = 'bold 14px monospace';
+                ctx.fillText('ID: ' + hashId, canvas.width / 2, 330);
+
+                const qrImg = new Image();
+                qrImg.crossOrigin = 'anonymous';
+                qrImg.onload = function() {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    if (ctx.roundRect) ctx.roundRect(canvas.width / 2 - 60, 360, 120, 120, 10);
+                    else ctx.rect(canvas.width / 2 - 60, 360, 120, 120);
+                    ctx.fill();
+                    ctx.drawImage(qrImg, canvas.width / 2 - 50, 370, 100, 100);
+
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.font = '12px Inter, sans-serif';
+                    ctx.fillText('Valid: 31 Dec 2027', canvas.width / 2, 510);
+                    ctx.font = '9px Inter, sans-serif';
+                    ctx.fillText('SECURE ID • ALUMNI ASSOCIATION', canvas.width / 2, 528);
+
+                    const link = document.createElement('a');
+                    link.download = `${member.name.replace(/\s+/g, '_')}_ID_Card.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                };
+                qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${hashId}-VERIFIED`;
+            }
+        }
+
+        // ==========================================
+        // MENTORSHIP PROGRAM LOGIC
+        // ==========================================
+        let mentorshipActiveTab = 'find-mentor';
+
+        function switchMentorshipTab(tabId) {
+            mentorshipActiveTab = tabId;
+            document.querySelectorAll('.mentorship-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.mentorship-tab-content').forEach(c => c.style.display = 'none');
+            
+            const tabBtn = document.getElementById(`tab-${tabId}`);
+            if (tabBtn) tabBtn.classList.add('active');
+            
+            const content = document.getElementById(`m-content-${tabId}`);
+            if (content) content.style.display = 'block';
+            
+            renderMentorship();
+        }
+
+        function renderMentorship() {
+            const member = JSON.parse(localStorage.getItem('alumnihub_logged_in_member'));
+            if (!member) return;
+
+            // Update Opt-in form state
+            const isMentorBox = document.getElementById('profileIsMentor');
+            const expertiseInput = document.getElementById('profileMentorExpertise');
+            if (isMentorBox) isMentorBox.checked = member.isMentor || false;
+            if (expertiseInput) expertiseInput.value = member.mentorExpertise || '';
+
+            // Render active tab contents
+            if (mentorshipActiveTab === 'find-mentor') {
+                renderMentorsList();
+            } else if (mentorshipActiveTab === 'requests') {
+                renderMentorshipRequestsList();
+            }
+        }
+
+        function renderMentorsList() {
+            const container = document.getElementById('mentorsListContainer');
+            if (!container) return;
+
+            const loggedIn = JSON.parse(localStorage.getItem('alumnihub_logged_in_member'));
+            const members = DB.getMembers().filter(m => m.isMentor && m.status === 'Approved' && m.email !== (loggedIn ? loggedIn.email : ''));
+            container.innerHTML = '';
+
+            if (members.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: span 3; padding: 2rem;">No registered mentors found.</p>';
+                return;
+            }
+
+            members.forEach(mentor => {
+                const initials = mentor.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+                const avatarHTML = mentor.avatar ? `<img src="${mentor.avatar}" alt="${mentor.name}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">` : `<div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--secondary), var(--primary)); display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 1.25rem;">${initials}</div>`;
+                
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.textAlign = 'center';
+                card.style.display = 'flex';
+                card.style.flexDirection = 'column';
+                card.style.alignItems = 'center';
+                card.innerHTML = `
+                    <div style="margin-bottom: 1rem;">${avatarHTML}</div>
+                    <div style="font-weight: 700; font-size: 1.1rem; color: var(--text-main);">${mentor.name}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">${mentor.dept} • Batch ${mentor.batch}</div>
+                    <span class="mentor-badge" style="margin-bottom: 1rem;">${mentor.mentorExpertise}</span>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; flex: 1;">${mentor.bio || 'Alumnus mentor ready to guide juniors.'}</p>
+                    <button class="btn btn-primary" style="width: 100%; padding: 0.5rem;" onclick="openRequestMentorship('${mentor.name}', '${mentor.mentorExpertise}', '${mentor.email}')">Request Mentorship</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterMentors() {
+            const query = document.getElementById('mentorSearchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('#mentorsListContainer .card');
+            cards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                if (text.includes(query)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function openRequestMentorship(name, expertise, email) {
+            document.getElementById('reqMentorNameDisplay').innerText = `Mentor: ${name}`;
+            document.getElementById('reqMentorExpertiseDisplay').innerText = `Expertise: ${expertise}`;
+            document.getElementById('reqMentorEmail').value = email;
+            document.getElementById('reqMessage').value = '';
+            
+            // Open modal
+            const modal = document.getElementById('requestMentorshipModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                setTimeout(() => modal.classList.add('active'), 10);
+            }
+        }
+
+        function submitMentorshipRequest(e) {
+            e.preventDefault();
+            const receiverEmail = document.getElementById('reqMentorEmail').value;
+            const message = document.getElementById('reqMessage').value;
+            const loggedIn = JSON.parse(localStorage.getItem('alumnihub_logged_in_member'));
+            if (!loggedIn) return;
+
+            const requests = JSON.parse(localStorage.getItem('alumnihub_mentorships')) || [];
+            requests.push({
+                id: 'req-' + Date.now(),
+                tenantId: portalTenantId,
+                senderEmail: loggedIn.email,
+                receiverEmail: receiverEmail,
+                message: message,
+                status: 'Pending',
+                date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+            });
+
+            localStorage.setItem('alumnihub_mentorships', JSON.stringify(requests));
+            closeModal('requestMentorshipModal');
+            alert('Mentorship request sent successfully!');
+            switchMentorshipTab('requests');
+        }
+
+        function saveMentorProfile(e) {
+            e.preventDefault();
+            const isMentor = document.getElementById('profileIsMentor').checked;
+            const expertise = document.getElementById('profileMentorExpertise').value;
+            
+            const loggedIn = JSON.parse(localStorage.getItem('alumnihub_logged_in_member'));
+            if (!loggedIn) return;
+
+            loggedIn.isMentor = isMentor;
+            loggedIn.mentorExpertise = expertise;
+            localStorage.setItem('alumnihub_logged_in_member', JSON.stringify(loggedIn));
+
+            // Sync with all members list
+            const members = DB.getMembers();
+            const idx = members.findIndex(m => m.email === loggedIn.email && m.tenantId === portalTenantId);
+            if (idx > -1) {
+                members[idx].isMentor = isMentor;
+                members[idx].mentorExpertise = expertise;
+                DB.saveMembers(members);
+            }
+
+            alert('Mentorship profile updated successfully!');
+            switchMentorshipTab('find-mentor');
+        }
+
+        function renderMentorshipRequestsList() {
+            const loggedIn = JSON.parse(localStorage.getItem('alumnihub_logged_in_member'));
+            if (!loggedIn) return;
+
+            const requests = JSON.parse(localStorage.getItem('alumnihub_mentorships')) || [];
+            const receivedContainer = document.getElementById('receivedRequestsContainer');
+            const sentContainer = document.getElementById('sentRequestsContainer');
+            
+            if (receivedContainer) receivedContainer.innerHTML = '';
+            if (sentContainer) sentContainer.innerHTML = '';
+
+            const received = requests.filter(r => r.receiverEmail === loggedIn.email && r.tenantId === portalTenantId);
+            const sent = requests.filter(r => r.senderEmail === loggedIn.email && r.tenantId === portalTenantId);
+            const members = DB.getMembers();
+
+            // Render Received
+            if (received.length === 0) {
+                receivedContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No received requests.</p>';
+            } else {
+                received.forEach(req => {
+                    const sender = members.find(m => m.email === req.senderEmail);
+                    const senderName = sender ? sender.name : req.senderEmail;
+                    const senderDetails = sender ? `${sender.dept} • Batch ${sender.batch}` : 'Alumnus';
+                    
+                    const card = document.createElement('div');
+                    card.className = 'request-card';
+                    
+                    let actionButtons = '';
+                    if (req.status === 'Pending') {
+                        actionButtons = `
+                            <div class="flex gap-2" style="margin-top: 1rem;">
+                                <button class="btn btn-outline" style="padding: 0.3rem 0.75rem; font-size: 0.8rem; border-color: var(--success); color: var(--success);" onclick="respondToMentorshipRequest('${req.id}', 'Accepted')"><i class="ri-check-line"></i> Accept</button>
+                                <button class="btn btn-outline" style="padding: 0.3rem 0.75rem; font-size: 0.8rem; border-color: var(--danger); color: var(--danger);" onclick="respondToMentorshipRequest('${req.id}', 'Declined')"><i class="ri-close-line"></i> Decline</button>
+                            </div>
+                        `;
+                    } else {
+                        const color = req.status === 'Accepted' ? 'color: var(--success);' : 'color: var(--danger);';
+                        actionButtons = `<div style="font-weight: 700; font-size: 0.85rem; margin-top: 0.5rem; ${color}">Status: ${req.status}</div>`;
+                    }
+
+                    card.innerHTML = `
+                        <div style="font-weight: 700; color: var(--text-main);">${senderName}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">${senderDetails}</div>
+                        <p style="font-size: 0.85rem; background: #f8fafc; padding: 0.75rem; border-radius: var(--radius); border: 1px solid var(--border); color: var(--text-muted); line-height: 1.4;">${req.message}</p>
+                        <span style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-top: 0.5rem;"><i class="ri-calendar-line"></i> Sent on ${req.date}</span>
+                        ${actionButtons}
+                    `;
+                    receivedContainer.appendChild(card);
+                });
+            }
+
+            // Render Sent
+            if (sent.length === 0) {
+                sentContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No sent requests.</p>';
+            } else {
+                sent.forEach(req => {
+                    const receiver = members.find(m => m.email === req.receiverEmail);
+                    const receiverName = receiver ? receiver.name : req.receiverEmail;
+                    
+                    const card = document.createElement('div');
+                    card.className = 'request-card';
+                    
+                    const statusColor = req.status === 'Pending' ? 'color: var(--warning);' : (req.status === 'Accepted' ? 'color: var(--success);' : 'color: var(--danger);');
+                    
+                    card.innerHTML = `
+                        <div style="font-weight: 700; color: var(--text-main);">Request to: ${receiverName}</div>
+                        <div style="font-size: 0.8rem; font-weight: bold; ${statusColor} margin-bottom: 0.5rem;">Status: ${req.status}</div>
+                        <p style="font-size: 0.85rem; background: #f8fafc; padding: 0.75rem; border-radius: var(--radius); border: 1px solid var(--border); color: var(--text-muted); line-height: 1.4;">${req.message}</p>
+                        <span style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-top: 0.5rem;"><i class="ri-calendar-line"></i> Sent on ${req.date}</span>
+                    `;
+                    sentContainer.appendChild(card);
+                });
+            }
+        }
+
+        function respondToMentorshipRequest(id, status) {
+            const requests = JSON.parse(localStorage.getItem('alumnihub_mentorships')) || [];
+            const idx = requests.findIndex(r => r.id === id);
+            if (idx > -1) {
+                requests[idx].status = status;
+                localStorage.setItem('alumnihub_mentorships', JSON.stringify(requests));
+                alert(`Request ${status.toLowerCase()}!`);
+                renderMentorshipRequestsList();
+            }
+        }
+
         // Attach DOM controllers globally to window for HTML element handlers
         window.toggleAuthMode = toggleAuthMode;
         window.handleAuthSubmit = handleAuthSubmit;
@@ -1415,6 +2019,19 @@
         window.castVote = castVote;
         window.saveProfile = saveProfile;
         window.createNewJob = createNewJob;
+        window.checkWizPasswordStrength = checkWizPasswordStrength;
+        window.goToStep1FromOTP = goToStep1FromOTP;
+        window.verifyOTPAndProceed = verifyOTPAndProceed;
+        window.handleAvatarSelected = handleAvatarSelected;
+        window.handleProfAvatarSelected = handleProfAvatarSelected;
+        window.clearUploadedProof = clearUploadedProof;
+        window.downloadIDCardPNG = downloadIDCardPNG;
+        window.switchMentorshipTab = switchMentorshipTab;
+        window.filterMentors = filterMentors;
+        window.openRequestMentorship = openRequestMentorship;
+        window.submitMentorshipRequest = submitMentorshipRequest;
+        window.saveMentorProfile = saveMentorProfile;
+        window.respondToMentorshipRequest = respondToMentorshipRequest;
     </script>
     <!-- Modal: Post a Job -->
     <div id="newJobModal" class="modal">
@@ -1508,6 +2125,33 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline" onclick="closeModal('checkoutModal')">Cancel</button>
                     <button type="submit" class="btn btn-primary" id="checkoutPayBtn">Pay & Confirm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Request Mentorship -->
+    <div id="requestMentorshipModal" class="modal">
+        <div class="modal-content" style="max-width: 480px;">
+            <div class="modal-header">
+                <h3>Request Mentorship</h3>
+                <button onclick="closeModal('requestMentorshipModal')" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);">&times;</button>
+            </div>
+            <form id="mentorshipRequestForm" onsubmit="submitMentorshipRequest(event)">
+                <input type="hidden" id="reqMentorEmail">
+                <div class="modal-body">
+                    <div style="background: #f8fafc; padding: 1rem; border-radius: var(--radius); margin-bottom: 1.25rem; border: 1px solid var(--border);">
+                        <div style="font-weight: 600; font-size: 0.95rem; color: var(--text-main);" id="reqMentorNameDisplay">Mentor: Kamal Uddin</div>
+                        <div style="font-size: 0.8rem; color: var(--primary); font-weight: 500;" id="reqMentorExpertiseDisplay">Expertise: Mathematics & Data Science</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="reqMessage">Write a message introducing yourself and what guidance you are seeking</label>
+                        <textarea id="reqMessage" class="form-control" style="height: 120px; resize: none;" placeholder="e.g. Hi, I am Jamil, a CSE graduate. I would love to connect with you for some guidance on transitioning into Data Science roles..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('requestMentorshipModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Send Request</button>
                 </div>
             </form>
         </div>
